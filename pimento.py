@@ -40,4 +40,11 @@ def menu(pre_prompt, items, post_prompt):
         elif num_matches == 1:
             selection = matches[0]
             acceptable_response_given = True
+        else:
+            print "[!] \"{response}\" matches multiple choices:".format(
+                response=response
+            )
+            for match in matches:
+                print "[!]   {}".format(match)
+            print "[!] Please specify your choice further."
     return selection
