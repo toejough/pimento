@@ -53,6 +53,23 @@ def test_menu_rejects_unmatching_response():
     p.expect('Result was no')
 
 
+def test_menu_rejects_no_response():
+    # yes
+    p = get_menu_process()
+    p.sendline('')
+    p.expect_exact('[!] an empty response is not valid.')
+    expect_menu_prompt(p)
+    p.sendline('yes')
+    p.expect('Result was yes')
+    # no
+    p = get_menu_process()
+    p.sendline('')
+    p.expect_exact('[!] an empty response is not valid.')
+    expect_menu_prompt(p)
+    p.sendline('no')
+    p.expect('Result was no')
+
+
 def test_menu_accepts_partial_response():
     # yes
     p = get_menu_process()

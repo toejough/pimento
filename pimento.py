@@ -31,7 +31,9 @@ def menu(pre_prompt, items, post_prompt):
         # Check for matches
         matches = [i for i in items if i.startswith(response)]
         num_matches = len(matches)
-        if num_matches == 0:
+        if response == '':
+            print "[!] an empty response is not valid."
+        elif num_matches == 0:
             print "[!] \"{response}\" does not match any of the valid choices.".format(
                 response=response
             )
