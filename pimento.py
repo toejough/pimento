@@ -34,8 +34,17 @@ def menu(pre_prompt, items, post_prompt):
             acceptable_response_given = True
         # Validate partial response
         else:
+            # Partial response
             for item in items:
                 if item.startswith(response):
                     selection = item
                     acceptable_response_given = True
+                    break
+            # No partial match
+            # TODO: elevate this to the same if/else level as
+            #  full and partial match logic
+            else:
+                print "[!] \"{response}\" does not match any of the valid choices.".format(
+                    response=response
+                )
     return selection
