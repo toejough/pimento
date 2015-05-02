@@ -144,11 +144,13 @@ def test_menu_numbered():
     p.expect('Result was no')
 
 
-#TODO - add error test for no items
-#TODO - add error test for default_index not an integer
-#TODO - add error test for default_index not in item list
-#TODO - add error test for default_index less than 0
-#TODO - add test for index numbers at the start of choices
+# TODO - add error test for no items
+# TODO - add error test for default_index not an integer
+# TODO - add error test for default_index not in item list
+# TODO - add error test for default_index less than 0
+# TODO - add test for index numbers at the start of choices
+# TODO - make it an error not to specify {} in the post prompt if there is a default
+# TODO - make a test for the above
 
 
 # [ Manual Interaction ]
