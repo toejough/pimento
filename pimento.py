@@ -28,23 +28,14 @@ def menu(pre_prompt, items, post_prompt):
         sys.stdout.flush()
         # Get user response
         response = raw_input()
-        # Validate full response
-        if response in items:
-            selection = response
+        # Check for matches
+        matches = [i for i in items if i.startswith(response)]
+        num_matches = len(matches)
+        if num_matches == 0:
+            print "[!] \"{response}\" does not match any of the valid choices.".format(
+                response=response
+            )
+        elif num_matches == 1:
+            selection = matches[0]
             acceptable_response_given = True
-        # Validate partial response
-        else:
-            # Partial response
-            for item in items:
-                if item.startswith(response):
-                    selection = item
-                    acceptable_response_given = True
-                    break
-            # No partial match
-            # TODO: elevate this to the same if/else level as
-            #  full and partial match logic
-            else:
-                print "[!] \"{response}\" does not match any of the valid choices.".format(
-                    response=response
-                )
     return selection
