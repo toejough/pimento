@@ -12,6 +12,7 @@ import pimento
 
 # [ Tests ]
 def test_menu_accepts_full_response():
+    # yes
     p = pexpect.spawn('python test_pimento.py')
     p.expect_exact('yes or no?')
     p.expect_exact('  yes')
@@ -19,6 +20,14 @@ def test_menu_accepts_full_response():
     p.expect_exact('Please choose: ')
     p.sendline('yes')
     p.expect('Result was yes')
+    # no
+    p = pexpect.spawn('python test_pimento.py')
+    p.expect_exact('yes or no?')
+    p.expect_exact('  yes')
+    p.expect_exact('  no')
+    p.expect_exact('Please choose: ')
+    p.sendline('no')
+    p.expect('Result was no')
 
 
 # [ Manual Interaction ]
