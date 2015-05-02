@@ -11,7 +11,6 @@ import pimento
 
 
 # [ Helpers ]
-# [ -Setup ]
 def get_menu_process():
     p = pexpect.spawn('python test_pimento.py', timeout=1)
     p.expect_exact('yes or no?')
@@ -30,6 +29,20 @@ def test_menu_accepts_full_response():
     # no
     p = get_menu_process()
     p.sendline('no')
+    p.expect('Result was no')
+
+
+def test_menu_accepts_partial_response():
+    # yes
+    p = get_menu_process()
+    p.sendline('y')
+    p.expect('Result was yes')
+    p = get_menu_process()
+    p.sendline('ye')
+    p.expect('Result was yes')
+    # no
+    p = get_menu_process()
+    p.sendline('n')
     p.expect('Result was no')
 
 
