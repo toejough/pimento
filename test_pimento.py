@@ -144,6 +144,13 @@ def test_menu_numbered():
     p.expect('Result was no')
 
 
+#TODO - add error test for no items
+#TODO - add error test for default_index not an integer
+#TODO - add error test for default_index not in item list
+#TODO - add error test for default_index less than 0
+#TODO - add test for index numbers at the start of choices
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
@@ -172,5 +179,5 @@ if __name__ == '__main__':
     elif args.default:
         result = pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=1)
     elif args.numbered:
-        result = pimento.menu("Select one of the following", ['yes', 'no', 'maybe'], "Please select by index or value [{}]: ", default_index=0)
+        result = pimento.menu("Select one of the following:", ['yes', 'no', 'maybe'], "Please select by index or value [{}]: ", default_index=0, indexed=True)
     print 'Result was {}'.format(result)
