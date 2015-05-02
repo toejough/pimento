@@ -127,7 +127,7 @@ def test_menu_rejects_multiple_matches():
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
-    group = parser.add_mutually_exclusive_group()
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--yn', help='yes or no prompt',
                         action='store_true')
     group.add_argument('--colors', help='colors prompt',
