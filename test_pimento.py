@@ -1,4 +1,5 @@
 import pimento
+import pexpect
 
 def test_basic():
     menu = pimento.Menu("yes or no?", ['yes', 'no'], "Please choose: ")
@@ -20,3 +21,11 @@ Please choose: '''
     menu._choose('foo')
     assert menu._result is pimento.INVALID
 
+def test_basic_interactive():
+    p = pexpect.spawn('python manual.py')
+    p.expect_exact('yes or no?')
+    p.expect_exact('  yes')
+    p.expect_exact('  no')
+    p.expect_exact('Please choose: ')
+    p.sendline('yes')
+    p.expect('Result was yes')
