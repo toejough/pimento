@@ -11,7 +11,7 @@ import pimento
 
 
 # [ Tests ]
-def test_simple_valid():
+def test_menu_accepts_full_response():
     p = pexpect.spawn('python test_pimento.py')
     p.expect_exact('yes or no?')
     p.expect_exact('  yes')
@@ -23,6 +23,5 @@ def test_simple_valid():
 
 # [ Manual Interaction ]
 if __name__ == '__main__':
-    menu = pimento.Menu("yes or no?", ['yes', 'no'], "Please choose: ")
-    result = menu.prompt()
+    result = pimento.menu("yes or no?", ['yes', 'no'], "Please choose: ")
     print 'Result was {}'.format(result)
