@@ -123,6 +123,16 @@ def test_menu_rejects_multiple_matches():
     p.expect('Result was black')
 
 
+def test_menu_default():
+    p = pexpect.spawn('python test_pimento.py --default', timeout=1)
+    p.expect_exact('Yes/No?')
+    p.expect_exact('  yes')
+    p.expect_exact('  no')
+    p.expect_exact('Please select one [no]: ')
+    p.sendline('')
+    p.expect('Result was no')
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
@@ -131,6 +141,8 @@ if __name__ == '__main__':
     group.add_argument('--yn', help='yes or no prompt',
                         action='store_true')
     group.add_argument('--colors', help='colors prompt',
+                        action='store_true')
+    group.add_argument('--default', help='yes or no with default',
                         action='store_true')
     args = parser.parse_args()
     if args.yn:
@@ -144,4 +156,6 @@ if __name__ == '__main__':
              ],
             "Please select one: "
         )
+    elif args.default:
+        result = pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default='no')
     print 'Result was {}'.format(result)

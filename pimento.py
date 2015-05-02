@@ -9,14 +9,24 @@ import sys
 
 
 # [ Private API ]
-def _prompt(pre_prompt, items, post_prompt):
-    '''Prompt once'''
+def _prompt(pre_prompt, items, post_prompt, default):
+    '''
+    Prompt once.
+    If you want the default displayed, put a format {} into the
+    post_prompt string (like 'select one [{}]: ')
+    '''
     print pre_prompt
     for item in items:
         print "{indent}{item}".format(
             indent='  ',
             item=item
         )
+    # try to sub in the default if provided
+    if default is not None:
+        try:
+            post_prompt = post_prompt.format(default)
+        except:
+            pass
     sys.stdout.write(post_prompt)
     sys.stdout.flush()
     # Get user response
@@ -24,16 +34,18 @@ def _prompt(pre_prompt, items, post_prompt):
     return response
 
 
-def _check_response(response, items):
+def _check_response(response, items, default):
     '''Check the response against the items'''
     # Set selection
     selection = None
     # Check for matches
     matches = [i for i in items if i.startswith(response)]
     num_matches = len(matches)
-    # Empty response
-    if response == '':
+    # Empty response, no default
+    if response == '' and default is None:
         print "[!] an empty response is not valid."
+    elif response == '':
+        selection = default
     # Bad response
     elif num_matches == 0:
         print "[!] \"{response}\" does not match any of the valid choices.".format(
@@ -54,7 +66,7 @@ def _check_response(response, items):
 
 
 # [ Public API ]
-def menu(pre_prompt, items, post_prompt):
+def menu(pre_prompt, items, post_prompt, default=None):
     '''Prompt with a menu'''
     # State
     acceptable_response_given = False
@@ -63,9 +75,9 @@ def menu(pre_prompt, items, post_prompt):
     # - wait until an acceptable response has been given
     while not acceptable_response_given:
         # Prompt and get response
-        response = _prompt(pre_prompt, items, post_prompt)
+        response = _prompt(pre_prompt, items, post_prompt, default)
         # validate response
-        selection = _check_response(response, items)
+        selection = _check_response(response, items, default)
         if selection is not None:
             acceptable_response_given = True
     return selection
