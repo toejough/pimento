@@ -66,8 +66,16 @@ def _check_response(response, items, default):
 
 
 # [ Public API ]
-def menu(pre_prompt, items, post_prompt, default=None):
+def menu(pre_prompt, items, post_prompt, default_index=None):
     '''Prompt with a menu'''
+    # Check that the default is in the list:
+    default = None
+    if default_index is not None and not isinstance(default_index, int):
+        raise TypeError("The default index ({}) is not an integer".format(default_index))
+    if default_index is not None and len(items) <= default_index:
+        raise RuntimeError("The default index ({}) >= length of the list".format(default_index))
+    elif default_index is not None:
+        default = items[default_index]
     # State
     acceptable_response_given = False
     selection = None

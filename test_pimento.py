@@ -133,6 +133,17 @@ def test_menu_default():
     p.expect('Result was no')
 
 
+def test_menu_numbered():
+    p = pexpect.spawn('python test_pimento.py --numbered', timeout=1)
+    p.expect_exact('Select one of the following:')
+    p.expect_exact('  [0] yes')
+    p.expect_exact('  [1] no')
+    p.expect_exact('  [2] maybe')
+    p.expect_exact('Please select by index or value [yes]: ')
+    p.sendline('1')
+    p.expect('Result was no')
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
@@ -143,6 +154,8 @@ if __name__ == '__main__':
     group.add_argument('--colors', help='colors prompt',
                         action='store_true')
     group.add_argument('--default', help='yes or no with default',
+                        action='store_true')
+    group.add_argument('--numbered', help='a numbered list',
                         action='store_true')
     args = parser.parse_args()
     if args.yn:
@@ -157,5 +170,7 @@ if __name__ == '__main__':
             "Please select one: "
         )
     elif args.default:
-        result = pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default='no')
+        result = pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=1)
+    elif args.numbered:
+        result = pimento.menu("Select one of the following", ['yes', 'no', 'maybe'], "Please select by index or value [{}]: ", default_index=0)
     print 'Result was {}'.format(result)
