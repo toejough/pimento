@@ -1,17 +1,80 @@
 # pimento
 simple CLI menu
 
-# example
-## create the menu with choices, a default, and indices
-Prompt the user to choose a color.  Specify a default, and use indices.
+# features
+## a simple cli menu
+The minimum required options are:
+* pre_prompt - the prompt to print before printing the options
+* items - the items which the user will be prompted to choose from
+* post_prompt - the prompt to print after printing the options
 ```python
 from pimento import menu
 result = menu(
   "which color?",
-  [
-    'red', 'blue', 'green',
-    'black', 'grey', 'white'
-  ],
+  ['red', 'blue', 'green', 'grey'],
+  "Please select one: "
+)
+```
+Prints:
+```bash
+which color?
+  red
+  blue
+  green
+  grey
+Please select one: 
+```
+
+## partial matches
+The user can select either a full option or a partial match.  All of the following will result in the user selecting `blue`:
+* `b`
+* `bl`
+* `blu`
+* `blue`
+
+## re-prompting
+When an invalid option is entered, an actionable error message is printed, and the menu is re-prompted.
+### when no choice is entered:
+`[!] an empty response is not valid.`
+### when an invalid choice is entered:
+`[!] "brown" does not match any of the valid choices.`
+### when an ambiguous choice is entered:
+If `gre` was entered...
+```
+[!] "gre" matches multiple choices:
+[!]   green
+[!]   grey
+[!] Please specify your choice further.
+```
+
+## using a default
+`menu` will accept a default_index keyword argument.  `items[default_index]` must be valid.  An invalid index will result in an exception being raised at call time.
+```python
+from pimento import menu
+result = menu(
+  "which color?",
+  ['red', 'blue', 'green'],
+  "Please select one [{}]: ",
+  default_index=0
+)
+```
+Prints:
+```bash
+which color?
+  red
+  blue
+  green
+Please select one [red]: 
+```
+When a default_index is provided, it is valid to enter no value.  In this case, the default value (`red`, in this example) is returned.
+
+## using indices
+`menu` will accept an `indexed` argument.  When set to `True`, indices will be printed with each option, and it will be valid to enter an index to choose an option.
+```python
+from pimento import menu
+result = menu(
+  "which color?",
+  ['red', 'blue', 'green'],
   "Please select one [{}]: ",
   default_index=0,
   indexed=True
@@ -23,21 +86,31 @@ which color?
   [0] red
   [1] blue
   [2] green
-  [3] black
-  [4] grey
-  [5] white
 Please select one [red]: 
 ```
-## Choose an option
-To get `red`, the user can:
-* just hit enter (to select the default)
+Choosing any of the following will return `red`:
+* <enter> (to select the default)
 * `r`
 * `re`
 * `red`
 * 0 (index)
 
-## Get the result
-If the user enters any of the above options, `result` is `red`.
+When using indices, the selection is matched first by index, then by item.  Given the following menu...
+```
+which number?
+  [0] 100
+  [1] 200
+  [2] 300
+Please select one:
+```
+...the selection/result pairs are:
+* 0 -> 100 (selection treated as index)
+* 1 -> 200 (selection treated as index)
+* 2 -> 300 (selection treated as index)
+* 3 -> 300 (selection matched no index, matched against items)
+* 10 -> 100 (selection matched no index, matched against items)
+* 20 -> 200 (selection matched no index, matched against items)
+* 30 -> 300 (selection matched no index, matched against items)
 
 # installation
 Latest pushed to [Pypi](https://pypi.python.org/pypi/pimento) ([v0.1.0](https://github.com/toejough/pimento/releases/tag/v0.1.0))
