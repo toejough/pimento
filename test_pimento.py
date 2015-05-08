@@ -6,6 +6,7 @@ Test suite for pimento
 # [ Imports ]
 # [ -Third Party ]
 import pexpect
+import pytest
 # [ -Project ]
 import pimento
 
@@ -161,6 +162,13 @@ def test_indexed_numbers():
     p.expect_exact('Please select by index or value: ')
     p.sendline('3')
     p.expect('Result was 300')
+
+
+def test_default_not_in_range():
+    with pytest.raises(ValueError):
+        pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=-1)
+    with pytest.raises(ValueError):
+        pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=2)
 
 
 # [ Manual Interaction ]

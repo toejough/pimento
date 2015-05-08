@@ -87,7 +87,9 @@ def menu(pre_prompt, items, post_prompt, default_index=None, indexed=False):
     if default_index is not None and not isinstance(default_index, int):
         raise TypeError("The default index ({}) is not an integer".format(default_index))
     if default_index is not None and len(items) <= default_index:
-        raise RuntimeError("The default index ({}) >= length of the list".format(default_index))
+        raise ValueError("The default index ({}) >= length of the list".format(default_index))
+    if default_index is not None and default_index < 0:
+        raise ValueError("The default index ({}) < 0.".format(default_index))
     elif default_index is not None:
         default = items[default_index]
     # TODO check default/prompt here, too (prompt should have a {} in it)
