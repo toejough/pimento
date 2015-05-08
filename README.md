@@ -16,7 +16,7 @@ result = menu(
 )
 ```
 Prints:
-```bash
+```
 which color?
   red
   blue
@@ -59,7 +59,7 @@ result = menu(
 )
 ```
 Prints:
-```bash
+```
 which color?
   red
   blue
@@ -81,7 +81,7 @@ result = menu(
 )
 ```
 Prints:
-```bash
+```
 which color?
   [0] red
   [1] blue
@@ -89,7 +89,7 @@ which color?
 Please select one [red]: 
 ```
 Choosing any of the following will return `red`:
-* <enter> (to select the default)
+* \<enter\> (to select the default)
 * `r`
 * `re`
 * `red`
