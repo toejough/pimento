@@ -176,6 +176,51 @@ def test_default_incorrect_type():
         pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=1.5)
 
 
+def test_no_items():
+    with pytest.raises(ValueError):
+        pimento.menu("Yes/No?", [], "Please select one: ")
+
+
+def test_bad_items_type():
+    with pytest.raises(TypeError):
+        pimento.menu("Yes/No?", 6, "Please select one: ")
+    def generator():
+        x = 0
+        while True:
+            yield x
+            x += 1
+    with pytest.raises(TypeError):
+        pimento.menu("Yes/No?", generator(), "Please select one: ")
+
+
+def test_iterable_items():
+    p = pexpect.spawn('python test_pimento.py --tuple', timeout=1)
+    p.expect_exact('Select one of the following:')
+    p.expect_exact('  100')
+    p.expect_exact('  200')
+    p.expect_exact('  300')
+    p.expect_exact('Please select: ')
+    p = pexpect.spawn('python test_pimento.py --string', timeout=1)
+    p.expect_exact('Select one of the following:')
+    p.expect_exact('  a')
+    p.expect_exact('  b')
+    p.expect_exact('  c')
+    p.expect_exact('Please select: ')
+    p = pexpect.spawn('python test_pimento.py --dictionary', timeout=1)
+    p.expect_exact('Select one of the following:')
+    i = p.expect_exact(['  key1', '  key2'])
+    if i == 0:
+        p.expect_exact('  key2')
+    else:
+        p.expect_exact('  key1')
+    p.expect_exact('Please select: ')
+    p = pexpect.spawn('python test_pimento.py --set', timeout=1)
+    p.expect_exact('Select one of the following:')
+    p.expect_exact('  1')
+    p.expect_exact('  2')
+    p.expect_exact('Please select: ')
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
@@ -190,6 +235,14 @@ if __name__ == '__main__':
     group.add_argument('--numbered', help='a numbered list',
                         action='store_true')
     group.add_argument('--indexed-numbers', help='a numbered list of numbers',
+                        action='store_true')
+    group.add_argument('--tuple', help='use a tuple',
+                        action='store_true')
+    group.add_argument('--string', help='use a string',
+                        action='store_true')
+    group.add_argument('--dictionary', help='use a dictionary',
+                        action='store_true')
+    group.add_argument('--set', help='use a set',
                         action='store_true')
     args = parser.parse_args()
     if args.yn:
@@ -209,4 +262,12 @@ if __name__ == '__main__':
         result = pimento.menu("Select one of the following:", ['yes', 'no', 'maybe'], "Please select by index or value [{}]: ", default_index=0, indexed=True)
     elif args.indexed_numbers:
         result = pimento.menu("Select one of the following:", ['100', '200', '300'], "Please select by index or value: ", indexed=True)
+    elif args.tuple:
+        result = pimento.menu("Select one of the following:", ('100', '200', '300'), "Please select: ")
+    elif args.string:
+        result = pimento.menu("Select one of the following:", 'abc', "Please select: ")
+    elif args.dictionary:
+        result = pimento.menu("Select one of the following:", {'key1': 'v1', 'key2': 'v2'}, "Please select: ")
+    elif args.set:
+        result = pimento.menu("Select one of the following:", set([1, 2]), "Please select: ")
     print 'Result was {}'.format(result)

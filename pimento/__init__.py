@@ -81,8 +81,16 @@ def _check_response(response, items, default, indexed):
 # [ Public API ]
 def menu(pre_prompt, items, post_prompt, default_index=None, indexed=False):
     '''Prompt with a menu'''
+    # Check that the list is iterable and finite
+    num_items = 0
+    try:
+        num_items = len(items)
+    except:
+        raise TypeError("The item list ({}) is not a finite iterable (has no length)".format(items))
+    # Check that the list has items
+    if num_items == 0:
+        raise ValueError("The item list is empty.")
     # Check that the default is in the list:
-    # TODO - pull this out/push it down
     default = None
     if default_index is not None and not isinstance(default_index, int):
         raise TypeError("The default index ({}) is not an integer".format(default_index))
