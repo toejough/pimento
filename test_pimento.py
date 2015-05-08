@@ -144,13 +144,23 @@ def test_menu_numbered():
     p.expect('Result was no')
 
 
-# TODO - add error test for no items
-# TODO - add error test for default_index not an integer
-# TODO - add error test for default_index not in item list
-# TODO - add error test for default_index less than 0
-# TODO - add test for index numbers at the start of choices
-# TODO - make it an error not to specify {} in the post prompt if there is a default
-# TODO - make a test for the above
+def test_indexed_numbers():
+    p = pexpect.spawn('python test_pimento.py --indexed-numbers', timeout=1)
+    p.expect_exact('Select one of the following:')
+    p.expect_exact('  [0] 100')
+    p.expect_exact('  [1] 200')
+    p.expect_exact('  [2] 300')
+    p.expect_exact('Please select by index or value: ')
+    p.sendline('1')
+    p.expect('Result was 200')
+    p = pexpect.spawn('python test_pimento.py --indexed-numbers', timeout=1)
+    p.expect_exact('Select one of the following:')
+    p.expect_exact('  [0] 100')
+    p.expect_exact('  [1] 200')
+    p.expect_exact('  [2] 300')
+    p.expect_exact('Please select by index or value: ')
+    p.sendline('3')
+    p.expect('Result was 300')
 
 
 # [ Manual Interaction ]
@@ -165,6 +175,8 @@ if __name__ == '__main__':
     group.add_argument('--default', help='yes or no with default',
                         action='store_true')
     group.add_argument('--numbered', help='a numbered list',
+                        action='store_true')
+    group.add_argument('--indexed-numbers', help='a numbered list of numbers',
                         action='store_true')
     args = parser.parse_args()
     if args.yn:
@@ -182,4 +194,6 @@ if __name__ == '__main__':
         result = pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=1)
     elif args.numbered:
         result = pimento.menu("Select one of the following:", ['yes', 'no', 'maybe'], "Please select by index or value [{}]: ", default_index=0, indexed=True)
+    elif args.indexed_numbers:
+        result = pimento.menu("Select one of the following:", ['100', '200', '300'], "Please select by index or value: ", indexed=True)
     print 'Result was {}'.format(result)
