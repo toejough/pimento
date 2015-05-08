@@ -100,6 +100,11 @@ def menu(pre_prompt, items, post_prompt, default_index=None, indexed=False):
         raise ValueError("The default index ({}) < 0.".format(default_index))
     elif default_index is not None:
         default = items[default_index]
+    # Check that the prompts are strings
+    if not isinstance(pre_prompt, basestring):
+        raise TypeError("The pre_prompt was not a string!")
+    if not isinstance(post_prompt, basestring):
+        raise TypeError("The pre_prompt was not a string!")
     # TODO check default/prompt here, too (prompt should have a {} in it)
     # State
     acceptable_response_given = False

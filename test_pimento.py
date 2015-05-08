@@ -221,6 +221,13 @@ def test_iterable_items():
     p.expect_exact('Please select: ')
 
 
+def test_string_prompts():
+    with pytest.raises(TypeError):
+        pimento.menu(123, [1, 2, 3], "Please select one: ")
+    with pytest.raises(TypeError):
+        pimento.menu("Yes/No?", ['y', 'n'], ['prompt'])
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
