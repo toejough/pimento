@@ -171,6 +171,11 @@ def test_default_not_in_range():
         pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=2)
 
 
+def test_default_incorrect_type():
+    with pytest.raises(TypeError):
+        pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=1.5)
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
