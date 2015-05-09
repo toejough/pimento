@@ -251,6 +251,14 @@ def test_default_post_prompt():
     p.expect_exact('Enter an option to continue [1]: ')
 
 
+def test_post_prompt_not_string():
+    # test for https://github.com/toejough/pimento/issues/15
+    try:
+        pimento.menu("pre-prompt", [1,2,3], 5)
+    except Exception as e:
+        assert "pre_prompt" not in e.message
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse

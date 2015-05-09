@@ -114,7 +114,7 @@ def menu(pre_prompt, items, post_prompt=NO_ARG, default_index=None, indexed=Fals
     if not isinstance(pre_prompt, basestring):
         raise TypeError("The pre_prompt was not a string!")
     if not isinstance(post_prompt, basestring):
-        raise TypeError("The pre_prompt was not a string!")
+        raise TypeError("The post_prompt was not a string!")
     # convert items to strings
     items = [str(i) for i in items]
     # TODO check default/prompt here, too (prompt should have a {} in it)
