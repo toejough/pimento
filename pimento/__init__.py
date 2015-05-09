@@ -130,6 +130,28 @@ def _check_default_index(items, default_index):
 def menu(pre_prompt, items, post_prompt=NO_ARG, default_index=None, indexed=False):
     '''
     Prompt with a menu.
+
+    Arguments:
+        pre_prompt -  Text to print before the option list.
+        items -  The items to print as options.
+        post_prompt -  Text to print after the option list.
+        default_index -  The index of the item which should be default, if any.
+        indexed -  Boolean.  True if the options should be indexed.
+
+    Specifying a default index:
+        The default index must index into the items.  In other words, `items[default_index]`
+        must exist.  It is encouraged, but not required, that you show the user that there is
+        a default, and what it is, via string interpolation in either of the prompts:
+            "prompt [{}]" as the prompt string will print "prompt [default]" if "default" were
+            the value of the item at the default index.
+
+    The default post-prompt:
+        The default post prompt is different depending on whether or not you provide a default_index.
+        If you don't, the prompt is just "Enter an option to continue: ".
+        If you do, the prompt adds the default value: "Enter an option to continue [{}]: "
+
+    Return:
+        result -  The full text of the unambiguously selected item.
     '''
     # arg checking
     _check_prompts(pre_prompt, post_prompt)
