@@ -19,24 +19,32 @@ def _prompt(pre_prompt, items, post_prompt, default, indexed):
     If you want the default displayed, put a format {} into the
     post_prompt string (like 'select one [{}]: ')
     '''
-    print pre_prompt
-    item_format = "{indent}{item}"
-    for index, item in enumerate(items):
-        if indexed:
-            item_format = "{{indent}}[{index}] {{item}}".format(
-                index=index
-            )
-        print item_format.format(
-            indent='  ',
-            item=item
-        )
     # try to sub in the default if provided
     if default is not None:
-        try:
+        if '{}' in pre_prompt:
+            pre_prompt = pre_prompt.format(default)
+        if '{}' in post_prompt:
             post_prompt = post_prompt.format(default)
-        except:
-            pass
-    sys.stdout.write(post_prompt)
+    # build the item strings
+    item_format = "{indent}{item}"
+    if indexed:
+        item_format = "{indent}[{index}] {item}"
+    item_text_list = []
+    indent = '  '
+    for index, item in enumerate(items):
+        item_text = ''
+        components = {
+            'indent': indent,
+            'item': item
+        }
+        if indexed:
+            components['index'] = index
+        item_text = item_format.format(**components)
+        item_text_list.append(item_text)
+    # build full menu
+    menu_parts = [pre_prompt] + item_text_list + [post_prompt]
+    full_menu = '\n'.join(menu_parts)
+    sys.stdout.write(full_menu)
     sys.stdout.flush()
     # Get user response
     response = raw_input()
