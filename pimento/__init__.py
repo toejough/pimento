@@ -5,11 +5,15 @@ Make simple python cli menus!
 
 # [ Imports ]
 # [ -Python ]
-import sys
+# import as _name so that they do not show up as part of the module
+import sys as _sys
 
 
 # [ GLOBALS ]
-NO_ARG=object()
+# _NO_ARG is a default.  If an arg is _NO_ARG, the function receiving it
+# knows the user has not passed anything in, even None.  This allows the
+# default argument to be dynamic, rather than static at parse time.
+_NO_ARG=object()
 
 
 # [ Private API ]
@@ -44,8 +48,8 @@ def _prompt(pre_prompt, items, post_prompt, default, indexed):
     # build full menu
     menu_parts = [pre_prompt] + item_text_list + [post_prompt]
     full_menu = '\n'.join(menu_parts)
-    sys.stdout.write(full_menu)
-    sys.stdout.flush()
+    _sys.stdout.write(full_menu)
+    _sys.stdout.flush()
     # Get user response
     response = raw_input()
     return response
@@ -94,7 +98,7 @@ def _check_prompts(pre_prompt, post_prompt):
     '''Check that the prompts are strings'''
     if not isinstance(pre_prompt, basestring):
         raise TypeError("The pre_prompt was not a string!")
-    if post_prompt is not NO_ARG and not isinstance(post_prompt, basestring):
+    if post_prompt is not _NO_ARG and not isinstance(post_prompt, basestring):
         raise TypeError("The post_prompt was given and was not a string!")
 
 
@@ -127,7 +131,8 @@ def _check_default_index(items, default_index):
 
 
 # [ Public API ]
-def menu(pre_prompt, items, post_prompt=NO_ARG, default_index=None, indexed=False):
+def menu(pre_prompt, items, post_prompt=_NO_ARG, default_index=None, indexed=False,
+         stream=_sys.stderr):
     '''
     Prompt with a menu.
 
@@ -160,7 +165,7 @@ def menu(pre_prompt, items, post_prompt=NO_ARG, default_index=None, indexed=Fals
     # arg mapping
     # - Fill in post-prompt dynamically if no arg
     actual_post_prompt = post_prompt
-    if post_prompt is NO_ARG:
+    if post_prompt is _NO_ARG:
         if default_index is None:
             actual_post_prompt = "Enter an option to continue: "
         else:

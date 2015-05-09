@@ -289,8 +289,13 @@ def test_menu_documentation():
 
 def test_package_documentation():
     assert pimento.__doc__ == '''
-    Make simple python cli menus!
-    '''
+Make simple python cli menus!
+'''
+
+
+def test_module_contents():
+    public_attributes = [a for a in pimento.__dict__ if not a.startswith('_')]
+    assert public_attributes == ['menu']
 
 
 # [ Manual Interaction ]
