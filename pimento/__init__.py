@@ -8,6 +8,10 @@ Make simple python menus with pimento!
 import sys
 
 
+# [ GLOBALS ]
+NO_ARG=object()
+
+
 # [ Private API ]
 def _prompt(pre_prompt, items, post_prompt, default, indexed):
     '''
@@ -79,8 +83,14 @@ def _check_response(response, items, default, indexed):
 
 
 # [ Public API ]
-def menu(pre_prompt, items, post_prompt, default_index=None, indexed=False):
+def menu(pre_prompt, items, post_prompt=NO_ARG, default_index=None, indexed=False):
     '''Prompt with a menu'''
+    # Fill in post-prompt dynamically if no arg
+    if post_prompt is NO_ARG:
+        if default_index is None:
+            post_prompt = "Enter an option to continue: "
+        else:
+            post_prompt = "Enter an option to continue [{}]: "
     # Check that the list is iterable and finite
     num_items = 0
     try:
