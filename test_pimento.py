@@ -47,11 +47,11 @@ def test_menu_accepts_full_response():
     # yes
     p = get_menu_process()
     p.sendline('yes')
-    p.expect('Result was yes')
+    p.expect('Result is yes')
     # no
     p = get_menu_process()
     p.sendline('no')
-    p.expect('Result was no')
+    p.expect('Result is no')
 
 
 def test_menu_rejects_unmatching_response():
@@ -61,14 +61,14 @@ def test_menu_rejects_unmatching_response():
     p.expect_exact('[!] "maybe" does not match any of the valid choices.')
     expect_menu_prompt(p)
     p.sendline('yes')
-    p.expect('Result was yes')
+    p.expect('Result is yes')
     # no
     p = get_menu_process()
     p.sendline('maybe')
     p.expect_exact('[!] "maybe" does not match any of the valid choices.')
     expect_menu_prompt(p)
     p.sendline('no')
-    p.expect('Result was no')
+    p.expect('Result is no')
 
 
 def test_menu_rejects_no_response():
@@ -78,28 +78,28 @@ def test_menu_rejects_no_response():
     p.expect_exact('[!] an empty response is not valid.')
     expect_menu_prompt(p)
     p.sendline('yes')
-    p.expect('Result was yes')
+    p.expect('Result is yes')
     # no
     p = get_menu_process()
     p.sendline('')
     p.expect_exact('[!] an empty response is not valid.')
     expect_menu_prompt(p)
     p.sendline('no')
-    p.expect('Result was no')
+    p.expect('Result is no')
 
 
 def test_menu_accepts_partial_response():
     # yes
     p = get_menu_process()
     p.sendline('y')
-    p.expect('Result was yes')
+    p.expect('Result is yes')
     p = get_menu_process()
     p.sendline('ye')
-    p.expect('Result was yes')
+    p.expect('Result is yes')
     # no
     p = get_menu_process()
     p.sendline('n')
-    p.expect('Result was no')
+    p.expect('Result is no')
 
 
 def test_menu_rejects_multiple_matches():
@@ -117,11 +117,11 @@ def test_menu_rejects_multiple_matches():
     p.expect_exact('[!]   black')
     p.expect_exact('[!] Please specify your choice further.')
     p.sendline('blu')
-    p.expect('Result was blue')
+    p.expect('Result is blue')
     # black
     p = get_color_menu_process()
     p.sendline('bla')
-    p.expect('Result was black')
+    p.expect('Result is black')
 
 
 def test_menu_default():
@@ -131,7 +131,7 @@ def test_menu_default():
     p.expect_exact('  no')
     p.expect_exact('Please select one [no]: ')
     p.sendline('')
-    p.expect('Result was no')
+    p.expect('Result is no')
 
 
 def test_menu_numbered():
@@ -142,7 +142,7 @@ def test_menu_numbered():
     p.expect_exact('  [2] maybe')
     p.expect_exact('Please select by index or value [yes]: ')
     p.sendline('1')
-    p.expect('Result was no')
+    p.expect('Result is no')
 
 
 def test_indexed_numbers():
@@ -153,7 +153,7 @@ def test_indexed_numbers():
     p.expect_exact('  [2] 300')
     p.expect_exact('Please select by index or value: ')
     p.sendline('1')
-    p.expect('Result was 200')
+    p.expect('Result is 200')
     p = pexpect.spawn('python test_pimento.py --indexed-numbers', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  [0] 100')
@@ -161,7 +161,7 @@ def test_indexed_numbers():
     p.expect_exact('  [2] 300')
     p.expect_exact('Please select by index or value: ')
     p.sendline('3')
-    p.expect('Result was 300')
+    p.expect('Result is 300')
 
 
 def test_default_not_in_range():
@@ -228,6 +228,16 @@ def test_string_prompts():
         pimento.menu("Yes/No?", ['y', 'n'], ['prompt'])
 
 
+def test_non_string_items():
+    p = pexpect.spawn('python test_pimento.py --set', timeout=1)
+    p.expect_exact('Select one of the following:')
+    p.expect_exact('  1')
+    p.expect_exact('  2')
+    p.expect_exact('Please select: ')
+    p.sendline('1')
+    p.expect_exact('Result is 1')
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
@@ -277,4 +287,6 @@ if __name__ == '__main__':
         result = pimento.menu("Select one of the following:", {'key1': 'v1', 'key2': 'v2'}, "Please select: ")
     elif args.set:
         result = pimento.menu("Select one of the following:", set([1, 2]), "Please select: ")
-    print 'Result was {}'.format(result)
+    elif args.pre_only:
+        result = pimento.menu("Select one of the following:", [1, 2], ": ")
+    print 'Result is {}'.format(result)
