@@ -6,13 +6,30 @@ simple CLI menu
 The minimum required options are:
 * pre_prompt - the prompt to print before printing the options
 * items - the items which the user will be prompted to choose from
-* post_prompt - the prompt to print after printing the options
+```python
+from pimento import menu
+result = menu(
+  "which color?",
+  ['red', 'blue', 'green', 'grey']
+)
+```
+Prints:
+```
+which color?
+  red
+  blue
+  green
+  grey
+Enter an option to continue: 
+```
+
+You may also enter your own post-prompt:
 ```python
 from pimento import menu
 result = menu(
   "which color?",
   ['red', 'blue', 'green', 'grey'],
-  "Please select one: "
+  "Please select one: "  # <--- custom post_prompt arg
 )
 ```
 Prints:
