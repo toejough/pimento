@@ -7,6 +7,7 @@ Make simple python cli menus!
 # [ -Python ]
 # import as _name so that they do not show up as part of the module
 import sys as _sys
+import argparse as _argparse
 
 
 # [ GLOBALS ]
@@ -17,7 +18,7 @@ _NO_ARG=object()
 
 
 # [ Private API ]
-def _prompt(pre_prompt, items, post_prompt, default, indexed):
+def _prompt(pre_prompt, items, post_prompt, default, indexed, stream):
     '''
     Prompt once.
     If you want the default displayed, put a format {} into the
@@ -48,14 +49,14 @@ def _prompt(pre_prompt, items, post_prompt, default, indexed):
     # build full menu
     menu_parts = [pre_prompt] + item_text_list + [post_prompt]
     full_menu = '\n'.join(menu_parts)
-    _sys.stdout.write(full_menu)
-    _sys.stdout.flush()
+    stream.write(full_menu)
+    stream.flush()
     # Get user response
     response = raw_input()
     return response
 
 
-def _check_response(response, items, default, indexed):
+def _check_response(response, items, default, indexed, stream):
     '''Check the response against the items'''
     # Set selection
     selection = None
@@ -72,25 +73,25 @@ def _check_response(response, items, default, indexed):
         num_matches = len(matches)
         # Empty response, no default
         if response == '' and default is None:
-            print "[!] an empty response is not valid."
+            stream.write("[!] an empty response is not valid.\n")
         elif response == '':
             selection = default
         # Bad response
         elif num_matches == 0:
-            print "[!] \"{response}\" does not match any of the valid choices.".format(
+            stream.write("[!] \"{response}\" does not match any of the valid choices.\n".format(
                 response=response
-            )
+            ))
         # One match
         elif num_matches == 1:
             selection = matches[0]
         # Multiple matches
         else:
-            print "[!] \"{response}\" matches multiple choices:".format(
+            stream.write("[!] \"{response}\" matches multiple choices:\n".format(
                 response=response
-            )
+            ))
             for match in matches:
-                print "[!]   {}".format(match)
-            print "[!] Please specify your choice further."
+                stream.write("[!]   {}\n".format(match))
+            stream.write("[!] Please specify your choice further.\n")
     return selection
 
 
@@ -130,6 +131,62 @@ def _check_default_index(items, default_index):
         raise ValueError("The default index ({}) < 0.".format(default_index))
 
 
+def _check_stream(stream):
+    '''Check that the stream is a file'''
+    if not isinstance(stream, file):
+        raise TypeError("The stream given ({}) is not a file object.".format(stream))
+
+
+def _cli():
+    '''CLI interface'''
+    parser = _argparse.ArgumentParser(
+        description='''
+            Present the user with a simple CLI menu, and return the option chosen.
+            The menu is presented via stderr.
+            The output is printed to stdout for piping.
+            ''',
+        epilog='''
+            The default for the post prompt is "Enter an option to continue: ".
+            If --default-index is specified, the default option value will be printed
+                in the post prompt as well.
+        '''
+    )
+    parser.add_argument(
+        'option',
+        help='The option(s) to present to the user.',
+        nargs='+'
+    )
+    parser.add_argument(
+        '--pre', '-p',
+        help='The pre-prompt/title/introduction to the menu. [%(default)s]',
+        default='Options:',
+        metavar='TEXT'
+    )
+    parser.add_argument(
+        '--post', '-P',
+        help='The prompt presented to the user after the menu items.',
+        metavar='TEXT'
+    )
+    parser.add_argument(
+        '--default-index', '-d',
+        help='The index of the item to use as the default',
+        type=int,
+        metavar='INT'
+    )
+    parser.add_argument(
+        '--indexed', '-i',
+        help='Print indices with the options, and allow the user to use them to choose.',
+        action='store_true'
+    )
+    args = parser.parse_args()
+    # argparse nargs is awkward.  Translate to be a proper plural.
+    options = args.option
+    # show the menu (via stderr)
+    result = menu(args.pre, options, args.post, args.default_index, args.indexed)
+    # print the result (to stdout)
+    print result
+
+
 # [ Public API ]
 def menu(pre_prompt, items, post_prompt=_NO_ARG, default_index=None, indexed=False,
          stream=_sys.stderr):
@@ -142,6 +199,8 @@ def menu(pre_prompt, items, post_prompt=_NO_ARG, default_index=None, indexed=Fal
         post_prompt -  Text to print after the option list.
         default_index -  The index of the item which should be default, if any.
         indexed -  Boolean.  True if the options should be indexed.
+        stream -  the stream to use to prompt the user.  Defaults to stderr so that stdout
+            can be reserved for program output rather than interactive menu output.
 
     Specifying a default index:
         The default index must index into the items.  In other words, `items[default_index]`
@@ -162,6 +221,7 @@ def menu(pre_prompt, items, post_prompt=_NO_ARG, default_index=None, indexed=Fal
     _check_prompts(pre_prompt, post_prompt)
     _check_items(items)
     _check_default_index(items, default_index)
+    _check_stream(stream)
     # arg mapping
     # - Fill in post-prompt dynamically if no arg
     actual_post_prompt = post_prompt
@@ -183,9 +243,9 @@ def menu(pre_prompt, items, post_prompt=_NO_ARG, default_index=None, indexed=Fal
     while not acceptable_response_given:
         selection = None
         # Prompt and get response
-        response = _prompt(pre_prompt, actual_items, actual_post_prompt, default, indexed)
+        response = _prompt(pre_prompt, actual_items, actual_post_prompt, default, indexed, stream)
         # validate response
-        selection = _check_response(response, actual_items, default, indexed)
+        selection = _check_response(response, actual_items, default, indexed, stream)
         # NOTE: acceptable response logic is purposely verbose to be clear about the semantics.
         if selection is not None:
             acceptable_response_given = True

@@ -24,7 +24,7 @@ def expect_color_menu_prompt(process):
 
 
 def get_color_menu_process():
-    p = pexpect.spawn('python test_pimento.py --colors', timeout=1)
+    p = pexpect.spawn('pimento red blue green black grey white -p "which color?" -P "Please select one: "', timeout=1)
     expect_color_menu_prompt(p)
     return p
 
@@ -37,7 +37,7 @@ def expect_menu_prompt(process):
 
 
 def get_menu_process():
-    p = pexpect.spawn('python test_pimento.py --yn', timeout=1)
+    p = pexpect.spawn('pimento yes no -p "yes or no?" -P "Please choose: "', timeout=1)
     expect_menu_prompt(p)
     return p
 
@@ -47,11 +47,11 @@ def test_menu_accepts_full_response():
     # yes
     p = get_menu_process()
     p.sendline('yes')
-    p.expect('Result is yes')
+    p.expect('yes')
     # no
     p = get_menu_process()
     p.sendline('no')
-    p.expect('Result is no')
+    p.expect('no')
 
 
 def test_menu_rejects_unmatching_response():
@@ -61,14 +61,14 @@ def test_menu_rejects_unmatching_response():
     p.expect_exact('[!] "maybe" does not match any of the valid choices.')
     expect_menu_prompt(p)
     p.sendline('yes')
-    p.expect('Result is yes')
+    p.expect('yes')
     # no
     p = get_menu_process()
     p.sendline('maybe')
     p.expect_exact('[!] "maybe" does not match any of the valid choices.')
     expect_menu_prompt(p)
     p.sendline('no')
-    p.expect('Result is no')
+    p.expect('no')
 
 
 def test_menu_rejects_no_response():
@@ -78,28 +78,28 @@ def test_menu_rejects_no_response():
     p.expect_exact('[!] an empty response is not valid.')
     expect_menu_prompt(p)
     p.sendline('yes')
-    p.expect('Result is yes')
+    p.expect('yes')
     # no
     p = get_menu_process()
     p.sendline('')
     p.expect_exact('[!] an empty response is not valid.')
     expect_menu_prompt(p)
     p.sendline('no')
-    p.expect('Result is no')
+    p.expect('no')
 
 
 def test_menu_accepts_partial_response():
     # yes
     p = get_menu_process()
     p.sendline('y')
-    p.expect('Result is yes')
+    p.expect('yes')
     p = get_menu_process()
     p.sendline('ye')
-    p.expect('Result is yes')
+    p.expect('yes')
     # no
     p = get_menu_process()
     p.sendline('n')
-    p.expect('Result is no')
+    p.expect('no')
 
 
 def test_menu_rejects_multiple_matches():
@@ -117,32 +117,32 @@ def test_menu_rejects_multiple_matches():
     p.expect_exact('[!]   black')
     p.expect_exact('[!] Please specify your choice further.')
     p.sendline('blu')
-    p.expect('Result is blue')
+    p.expect('blue')
     # black
     p = get_color_menu_process()
     p.sendline('bla')
-    p.expect('Result is black')
+    p.expect('black')
 
 
 def test_menu_default():
-    p = pexpect.spawn('python test_pimento.py --default', timeout=1)
+    p = pexpect.spawn('pimento yes no -p "Yes/No?" -P "Please select one [{}]: " --default-index=1', timeout=1)
     p.expect_exact('Yes/No?')
     p.expect_exact('  yes')
     p.expect_exact('  no')
     p.expect_exact('Please select one [no]: ')
     p.sendline('')
-    p.expect('Result is no')
+    p.expect('no')
 
 
 def test_menu_numbered():
-    p = pexpect.spawn('python test_pimento.py --numbered', timeout=1)
+    p = pexpect.spawn('pimento yes no maybe -i --pre "Select one of the following:" --post "Please select by index or value [{}]: " -d 0', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  [0] yes')
     p.expect_exact('  [1] no')
     p.expect_exact('  [2] maybe')
     p.expect_exact('Please select by index or value [yes]: ')
     p.sendline('1')
-    p.expect('Result is no')
+    p.expect('no')
 
 
 def test_indexed_numbers():
@@ -269,6 +269,8 @@ def test_menu_documentation():
         post_prompt -  Text to print after the option list.
         default_index -  The index of the item which should be default, if any.
         indexed -  Boolean.  True if the options should be indexed.
+        stream -  the stream to use to prompt the user.  Defaults to stderr so that stdout
+            can be reserved for program output rather than interactive menu output.
 
     Specifying a default index:
         The default index must index into the items.  In other words, `items[default_index]`
@@ -288,9 +290,7 @@ def test_menu_documentation():
 
 
 def test_package_documentation():
-    assert pimento.__doc__ == '''
-Make simple python cli menus!
-'''
+    assert pimento.__doc__ == '\nMake simple python cli menus!\n'
 
 
 def test_module_contents():
@@ -298,19 +298,49 @@ def test_module_contents():
     assert public_attributes == ['menu']
 
 
+def test_cli_script_use():
+    p = pexpect.spawn('pimento', timeout=1)
+    p.expect_exact('usage: pimento [-h] [--pre TEXT] [--post TEXT] [--default-index INT]')
+    p.expect_exact('[--indexed]')
+    p.expect_exact('option [option ...]')
+    p.expect_exact('pimento: error: too few arguments')
+
+
+def test_cli_script_help():
+    expected_help_text = '''usage: pimento [-h] [--pre TEXT] [--post TEXT] [--default-index INT]
+               [--indexed]
+               option [option ...]
+
+Present the user with a simple CLI menu, and return the option chosen. The
+menu is presented via stderr. The output is printed to stdout for piping.
+
+positional arguments:
+  option                The option(s) to present to the user.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --pre TEXT, -p TEXT   The pre-prompt/title/introduction to the menu.
+                        [Options:]
+  --post TEXT, -P TEXT  The prompt presented to the user after the menu items.
+  --default-index INT, -d INT
+                        The index of the item to use as the default
+  --indexed, -i         Print indices with the options, and allow the user to
+                        use them to choose.
+
+The default for the post prompt is "Enter an option to continue: ". If
+--default-index is specified, the default option value will be printed in the
+post prompt as well.'''
+    expected_lines = expected_help_text.splitlines()
+    p = pexpect.spawn('pimento --help', timeout=1)
+    for line in expected_lines:
+        p.expect_exact(line)
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--yn', help='yes or no prompt',
-                        action='store_true')
-    group.add_argument('--colors', help='colors prompt',
-                        action='store_true')
-    group.add_argument('--default', help='yes or no with default',
-                        action='store_true')
-    group.add_argument('--numbered', help='a numbered list',
-                        action='store_true')
     group.add_argument('--indexed-numbers', help='a numbered list of numbers',
                         action='store_true')
     group.add_argument('--tuple', help='use a tuple',
@@ -326,22 +356,7 @@ if __name__ == '__main__':
     group.add_argument('--pre-only-default', help='only a pre-prompt with a default arg',
                         action='store_true')
     args = parser.parse_args()
-    if args.yn:
-        result = pimento.menu("yes or no?", ['yes', 'no'], "Please choose: ")
-    elif args.colors:
-        result = pimento.menu(
-            "which color?",
-            [
-                'red', 'blue', 'green',
-                'black', 'grey', 'white'
-             ],
-            "Please select one: "
-        )
-    elif args.default:
-        result = pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=1)
-    elif args.numbered:
-        result = pimento.menu("Select one of the following:", ['yes', 'no', 'maybe'], "Please select by index or value [{}]: ", default_index=0, indexed=True)
-    elif args.indexed_numbers:
+    if args.indexed_numbers:
         result = pimento.menu("Select one of the following:", ['100', '200', '300'], "Please select by index or value: ", indexed=True)
     elif args.tuple:
         result = pimento.menu("Select one of the following:", ('100', '200', '300'), "Please select: ")
