@@ -287,6 +287,12 @@ def test_menu_documentation():
     '''
 
 
+def test_package_documentation():
+    assert pimento.__doc__ == '''
+    Make simple python cli menus!
+    '''
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse

@@ -1,5 +1,5 @@
 '''
-Make simple python menus with pimento!
+Make simple python cli menus!
 '''
 
 
