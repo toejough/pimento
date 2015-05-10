@@ -189,7 +189,7 @@ def _cli():
 
 
 # [ Public API ]
-def menu(pre_prompt, items, post_prompt=_NO_ARG, default_index=None, indexed=False,
+def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, indexed=False,
          stream=_sys.stderr):
     '''
     Prompt with a menu.
@@ -218,6 +218,11 @@ def menu(pre_prompt, items, post_prompt=_NO_ARG, default_index=None, indexed=Fal
     Return:
         result -  The full text of the unambiguously selected item.
     '''
+    # deprecated use: pre_promt first, items second
+    if isinstance(items, basestring) and not isinstance(pre_prompt, basestring):
+        swap = items
+        items = pre_prompt
+        pre_prompt = swap
     # arg checking
     _check_prompts(pre_prompt, post_prompt)
     _check_items(items)

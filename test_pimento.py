@@ -336,6 +336,14 @@ post prompt as well.'''
         p.expect_exact(line)
 
 
+def test_default_pre_prompt():
+    p = pexpect.spawn('python test_pimento.py --list-only', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  1')
+    p.expect_exact('  2')
+    p.expect_exact('Enter an option to continue: ')
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
@@ -355,13 +363,15 @@ if __name__ == '__main__':
                         action='store_true')
     group.add_argument('--pre-only-default', help='only a pre-prompt with a default arg',
                         action='store_true')
+    group.add_argument('--list-only', help='only a list of options',
+                        action='store_true')
     args = parser.parse_args()
     if args.indexed_numbers:
         result = pimento.menu("Select one of the following:", ['100', '200', '300'], "Please select by index or value: ", indexed=True)
     elif args.tuple:
         result = pimento.menu("Select one of the following:", ('100', '200', '300'), "Please select: ")
     elif args.string:
-        result = pimento.menu("Select one of the following:", 'abc', "Please select: ")
+        result = pimento.menu('abc', "Select one of the following:", "Please select: ")
     elif args.dictionary:
         result = pimento.menu("Select one of the following:", {'key1': 'v1', 'key2': 'v2'}, "Please select: ")
     elif args.set:
@@ -370,4 +380,6 @@ if __name__ == '__main__':
         result = pimento.menu("Select one of the following:", [1, 2])
     elif args.pre_only_default:
         result = pimento.menu("Select one of the following:", [1, 2], default_index=0)
+    elif args.list_only:
+        result = pimento.menu([1, 2])
     print 'Result is {}'.format(result)
