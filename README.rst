@@ -435,7 +435,7 @@ There is a standalone CLI tool of the same name (``pimento``), which is a wrappe
     pimento --help
     usage: pimento [-h] [--pre TEXT] [--post TEXT] [--default-index INT]
                    [--indexed]
-                   option [option ...]
+                   [option ...]
 
     Present the user with a simple CLI menu, and return the option chosen. The
     menu is presented via stderr. The output is printed to stdout for piping.
@@ -459,6 +459,15 @@ There is a standalone CLI tool of the same name (``pimento``), which is a wrappe
     The default for the post prompt is "Enter an option to continue: ". If
     --default-index is specified, the default option value will be printed in the
     post prompt as well.
+
+On \*nix, the CLI tool is capable of taking options from a pipe, like so:
+::
+
+  echo -e 'foo\nbar' | pimento
+  Options:
+    foo
+    bar
+  Enter an option to continue:
 
 
 installation

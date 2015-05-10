@@ -304,19 +304,11 @@ def test_module_contents():
     assert public_attributes == ['menu']
 
 
-def test_cli_script_use():
-    p = pexpect.spawn('pimento', timeout=1)
-    p.expect_exact('usage: pimento [-h] [--pre TEXT] [--post TEXT] [--default-index INT]')
-    p.expect_exact('[--indexed]')
-    p.expect_exact('option [option ...]')
-    p.expect_exact(['pimento: error: too few arguments',
-                    'pimento: error: the following arguments are required: option'])
-
-
 def test_cli_script_help():
     expected_help_text = '''usage: pimento [-h] [--pre TEXT] [--post TEXT] [--default-index INT]
                [--indexed]
-               option [option ...]
+               [option [option ...]]
+
 
 Present the user with a simple CLI menu, and return the option chosen. The
 menu is presented via stderr. The output is printed to stdout for piping.
@@ -678,6 +670,14 @@ def test_partial_fuzzy_option():
     p.expect_exact('[!] Please specify your choice further.')
     p.sendline('bar foo')
     p.expect_exact('foo bar baz')
+
+
+def test_piping_to_cli():
+    p = pexpect.spawn('bash', args = ['-c', 'echo -e "hello\ngoodbye" | pimento'], timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  hello')
+    p.expect_exact('  goodbye')
+    p.expect_exact('Enter an option to continue: ')
 
 
 # [ Manual Interaction ]
