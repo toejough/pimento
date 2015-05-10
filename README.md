@@ -131,8 +131,38 @@ Please select one:
 * 20 -> 200 (selection matched no index, matched against items)
 * 30 -> 300 (selection matched no index, matched against items)
 
+# CLI
+There is a standalone CLI tool of the same name (`pimento`), which is a wrapper for `pimento.menu`, and can be used to create simple menus quickly on the command line:
+
+```
+pimento --help
+usage: pimento [-h] [--pre TEXT] [--post TEXT] [--default-index INT]
+               [--indexed]
+               option [option ...]
+
+Present the user with a simple CLI menu, and return the option chosen. The
+menu is presented via stderr. The output is printed to stdout for piping.
+
+positional arguments:
+  option                The option(s) to present to the user.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --pre TEXT, -p TEXT   The pre-prompt/title/introduction to the menu.
+                        [Options:]
+  --post TEXT, -P TEXT  The prompt presented to the user after the menu items.
+  --default-index INT, -d INT
+                        The index of the item to use as the default
+  --indexed, -i         Print indices with the options, and allow the user to
+                        use them to choose.
+
+The default for the post prompt is "Enter an option to continue: ". If
+--default-index is specified, the default option value will be printed in the
+post prompt as well.
+```
+
 # installation
-Latest pushed to [Pypi](https://pypi.python.org/pypi/pimento) ([v0.2.0](https://github.com/toejough/pimento/releases/tag/v0.2.0))
+Latest pushed to [Pypi](https://pypi.python.org/pypi/pimento) ([v0.3.0](https://github.com/toejough/pimento/releases/tag/v0.3.0))
 ```bash
 pip install pimento
 ```
