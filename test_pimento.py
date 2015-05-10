@@ -239,12 +239,12 @@ def test_non_string_items():
 
 
 def test_default_post_prompt():
-    p = pexpect.spawn('python test_pimento.py --pre-only', timeout=1)
+    p = pexpect.spawn('pimento 1 2 -p "Select one of the following:"', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  1')
     p.expect_exact('  2')
     p.expect_exact('Enter an option to continue: ')
-    p = pexpect.spawn('python test_pimento.py --pre-only-default', timeout=1)
+    p = pexpect.spawn('pimento 1 2 -p "Select one of the following:" -d 0', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  1')
     p.expect_exact('  2')

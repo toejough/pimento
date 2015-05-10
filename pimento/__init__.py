@@ -165,6 +165,7 @@ def _cli():
     parser.add_argument(
         '--post', '-P',
         help='The prompt presented to the user after the menu items.',
+        default=_NO_ARG,
         metavar='TEXT'
     )
     parser.add_argument(
