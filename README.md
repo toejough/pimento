@@ -176,7 +176,7 @@ post prompt as well.
 ```
 
 # installation
-Latest pushed to [Pypi](https://pypi.python.org/pypi/pimento) ([v0.3.0](https://github.com/toejough/pimento/releases/tag/v0.3.0))
+Latest pushed to [Pypi](https://pypi.python.org/pypi/pimento) ([v0.4.0](https://github.com/toejough/pimento/releases/tag/v0.4.0))
 ```bash
 pip install pimento
 ```

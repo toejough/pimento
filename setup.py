@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pimento',
-    version='0.3.0',
+    version='0.4.0',
     description='Simple CLI Menus',
     long_description='Python Menus.  Make an interactive menu with a default, pre- and post-prompts, partial argument matching, indexing, etc.',
     url='https://github.com/toejough/pimento',
