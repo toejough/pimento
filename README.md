@@ -4,31 +4,45 @@ simple CLI menu
 # features
 ## a simple cli menu
 The minimum required options are:
-* pre_prompt - the prompt to print before printing the options
 * items - the items which the user will be prompted to choose from
 ```python
 from pimento import menu
 result = menu(
-  "which color?",
   ['red', 'blue', 'green', 'grey']
 )
 ```
 Prints:
 ```
-which color?
+Options:
   red
   blue
   green
   grey
 Enter an option to continue: 
 ```
-
+You may also enter your own pre-prompt:
+```python
+from pimento import menu
+result = menu(
+  ['red', 'blue', 'green', 'grey'],
+  "Which color?"  # <--- custom pre_prompt arg
+)
+```
+Prints:
+```
+Which color?
+  red
+  blue
+  green
+  grey
+Enter an option to continue: 
+```
 You may also enter your own post-prompt:
 ```python
 from pimento import menu
 result = menu(
-  "which color?",
   ['red', 'blue', 'green', 'grey'],
+  "which color?",
   "Please select one: "  # <--- custom post_prompt arg
 )
 ```
@@ -69,8 +83,8 @@ If `gre` was entered...
 ```python
 from pimento import menu
 result = menu(
-  "which color?",
   ['red', 'blue', 'green'],
+  "which color?",
   "Please select one [{}]: ",
   default_index=0
 )
@@ -92,8 +106,8 @@ When a default_index is provided, if `{}` is present in the post-prompt, it will
 ```python
 from pimento import menu
 result = menu(
-  "which color?",
   ['red', 'blue', 'green'],
+  "which color?",
   "Please select one [{}]: ",
   default_index=0,
   indexed=True
@@ -173,3 +187,16 @@ pip install git+https://github.com/toejough/pimento
 
 # testing
 pimento has only been tested on python 2.7.9.
+
+# API deprecation notice
+Prior to version v0.4.0, the signature for menu was:
+```python
+def menu(pre_prompt, items, post_prompt=DEFAULT, default_index=None, indexed=False):
+```
+
+In v0.4.0, the signature changed to:
+```python
+def menu(items, pre_prompt=DEFAULT, post_prompt=DEFAULT, default_index=None, indexed=False):
+```
+
+To ease transition of any users, there is special code in place to determine which order the caller is passing in `items` and `pre_prompt`.  All pre-0.4.0 code should continue to work, but passing `pre_prompt` as the first argument is a deprecated use and should be discontinued.  Old code should be updated.  The compatibility mode will be discontinued soon, but definitely by 1.0.0.
