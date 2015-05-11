@@ -3,13 +3,11 @@ simple CLI menu
 
 # features
 ## a simple cli menu
-The minimum required options are:
-* items - the items which the user will be prompted to choose from
+There is a single required argument:
+* items - a finite iterable (list, tuple, etc) of items which the user will be prompted to choose from
 ```python
 from pimento import menu
-result = menu(
-  ['red', 'blue', 'green', 'grey']
-)
+result = menu(['red', 'blue', 'green', 'grey'])
 ```
 Prints:
 ```
@@ -66,12 +64,34 @@ The user can select either a full option or a partial match.  All of the followi
 ## re-prompting
 When an invalid option is entered, an actionable error message is printed, and the menu is re-prompted.
 ### when no choice is entered:
-`[!] an empty response is not valid.`
+```
+which color?
+  red
+  blue
+  green
+  grey
+Please select one: 
+[!] an empty response is not valid.
+```
 ### when an invalid choice is entered:
-`[!] "brown" does not match any of the valid choices.`
+```
+which color?
+  red
+  blue
+  green
+  grey
+Please select one: brown
+[!] "brown" does not match any of the valid choices.
+```
 ### when an ambiguous choice is entered:
 If `gre` was entered...
 ```
+which color?
+  red
+  blue
+  green
+  grey
+Please select one: gre
 [!] "gre" matches multiple choices:
 [!]   green
 [!]   grey
@@ -189,7 +209,7 @@ pip install git+https://github.com/toejough/pimento
 pimento has only been tested on python 2.7.9.
 
 # API deprecation notice
-Prior to version v0.4.0, the signature for menu was:
+Prior to version v0.4.0, the signature for `menu` was:
 ```python
 def menu(pre_prompt, items, post_prompt=DEFAULT, default_index=None, indexed=False):
 ```
@@ -200,3 +220,5 @@ def menu(items, pre_prompt=DEFAULT, post_prompt=DEFAULT, default_index=None, ind
 ```
 
 To ease transition of any users, there is special code in place to determine which order the caller is passing in `items` and `pre_prompt`.  All pre-0.4.0 code should continue to work, but passing `pre_prompt` as the first argument is a deprecated use and should be discontinued.  Old code should be updated.  The compatibility mode will be discontinued soon, but definitely by 1.0.0.
+
+The API was changed to allow the simplest possible calling/use of the `menu` function.  The original signature was chosen because I thought that there wasn't a sensible default value, but "Options:" seems sensible enough for a generic default.
