@@ -56,7 +56,7 @@ def _prompt(pre_prompt, items, post_prompt, default, indexed, stream):
     return response
 
 
-def _check_response(response, items, default, indexed, stream, insensitive):
+def _check_response(response, items, default, indexed, stream, insensitive, search):
     '''Check the response against the items'''
     # Set selection
     selection = None
@@ -70,10 +70,16 @@ def _check_response(response, items, default, indexed, stream, insensitive):
     if selection is None:
         # Check for text matches
         # if insensitive, lowercase the comparison
-        if insensitive:
-            matches = [i for i in items if i.lower().startswith(response.lower())]
+        if search:
+            if insensitive:
+                matches = [i for i in items if response.lower() in i.lower()]
+            else:
+                matches = [i for i in items if response in i]
         else:
-            matches = [i for i in items if i.startswith(response)]
+            if insensitive:
+                matches = [i for i in items if i.lower().startswith(response.lower())]
+            else:
+                matches = [i for i in items if i.startswith(response)]
         num_matches = len(matches)
         # Empty response, no default
         if response == '' and default is None:
@@ -184,11 +190,16 @@ def _cli():
         action='store_true'
     )
     parser.add_argument(
-         '--insensitive', '-I',
+        '--insensitive', '-I',
         help=(
             'Perform insensitive matching.  Also drops any items that case-insensitively match'
             + ' prior items.'
         ),
+        action='store_true'
+    )
+    parser.add_argument(
+        '--search', '-s',
+        help='search for the user input anywhere in the item strings, not just at the beginning.',
         action='store_true'
     )
     args = parser.parse_args()
@@ -201,7 +212,8 @@ def _cli():
         post_prompt=args.post,
         default_index=args.default_index,
         indexed=args.indexed,
-        insensitive=args.insensitive
+        insensitive=args.insensitive,
+        search=args.search
     )
     # print the result (to stdout)
     _sys.stdout.write(result + '\n')
@@ -231,7 +243,7 @@ def _dedup(items, insensitive):
 
 # [ Public API ]
 def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, indexed=False,
-         stream=_sys.stderr, insensitive=False):
+         stream=_sys.stderr, insensitive=False, search=False):
     '''
     Prompt with a menu.
 
@@ -245,6 +257,7 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
             can be reserved for program output rather than interactive menu output.
         insensitive -  allow insensitive matching.  Also drops items which case-insensitively match
           prior items.
+        search -  search for the user input anwhere in the item strings, not just at the beginning.
 
     Specifying a default index:
         The default index must index into the items.  In other words, `items[default_index]`
@@ -296,7 +309,7 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
         # Prompt and get response
         response = _prompt(pre_prompt, deduped_items, actual_post_prompt, default, indexed, stream)
         # validate response
-        selection = _check_response(response, deduped_items, default, indexed, stream, insensitive)
+        selection = _check_response(response, deduped_items, default, indexed, stream, insensitive, search)
         # NOTE: acceptable response logic is purposely verbose to be clear about the semantics.
         if selection is not None:
             acceptable_response_given = True

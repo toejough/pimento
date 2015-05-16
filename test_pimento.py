@@ -273,6 +273,7 @@ def test_menu_documentation():
             can be reserved for program output rather than interactive menu output.
         insensitive -  allow insensitive matching.  Also drops items which case-insensitively match
           prior items.
+        search -  search for the user input anwhere in the item strings, not just at the beginning.
 
     Specifying a default index:
         The default index must index into the items.  In other words, `items[default_index]`
@@ -399,6 +400,36 @@ def test_insensitive_deduplication():
     p.expect_exact('Options:')
     p.expect_exact('  Foo')
     p.expect_exact('Enter an option to continue: ')
+
+
+def test_search():
+    p = pexpect.spawn('pimento "pizza hut" "taco bell" "dairy queen" --search', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  pizza hut')
+    p.expect_exact('  taco bell')
+    p.expect_exact('  dairy queen')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline("queen")
+    p.expect_exact('dairy queen')
+    p = pexpect.spawn('pimento "pizza hut" "taco bell" "dairy queen" --search', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  pizza hut')
+    p.expect_exact('  taco bell')
+    p.expect_exact('  dairy queen')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline("e")
+    p.expect_exact('[!] "e" matches multiple choices:')
+    p.expect_exact('[!]   taco bell')
+    p.expect_exact('[!]   dairy queen')
+    p.expect_exact('[!] Please specify your choice further.')
+    p = pexpect.spawn('pimento "pizza hut" "taco bell" "dairy queen" --search', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  pizza hut')
+    p.expect_exact('  taco bell')
+    p.expect_exact('  dairy queen')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline("Queen")
+    p.expect_exact('dairy queen')
 
 
 # [ Manual Interaction ]

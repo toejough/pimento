@@ -200,6 +200,25 @@ Enter an option to continue:
 ```
 Entering `red` will get you `RED`, `blue` will get you `Blue`, and `GREEN` will get you `green`.
 
+## searching
+`menu` will accept a `search` argument, which will make the menu search for the user input in the whole item string, rather than just at the start:
+```python
+from pimento import menu
+result = menu(
+  ['RED bull', 'Blue bonnet', 'green giant'],
+  insensitive=True
+)
+```
+Prints:
+```
+Options:
+  RED bull
+  Blue bonnet
+  green giant
+Enter an option to continue: 
+```
+Entering `bull` will return `RED bull`.
+
 
 # CLI
 There is a standalone CLI tool of the same name (`pimento`), which is a wrapper for `pimento.menu`, and can be used to create simple menus quickly on the command line:
@@ -225,6 +244,11 @@ optional arguments:
                         The index of the item to use as the default
   --indexed, -i         Print indices with the options, and allow the user to
                         use them to choose.
+  --insensitive, -I     Perform insensitive matching. Also drops any items
+                        that case-insensitively match prior items.
+  --search, -s          search for the user input anywhere in the item
+                        strings, not just at the beginning.
+
 
 The default for the post prompt is "Enter an option to continue: ". If
 --default-index is specified, the default option value will be printed in the
