@@ -30,8 +30,8 @@ setup(
             'Programming Language :: Python :: 2.7',
     ],
     keywords="menu cli",
-    packages = find_packages(),
-    install_requires = [],
+    packages=find_packages(),
+    install_requires=[],
     entry_points={
         'console_scripts': [
             'pimento=pimento:_cli',

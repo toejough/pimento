@@ -256,7 +256,7 @@ def test_post_prompt_not_string():
     try:
         pimento.menu("pre-prompt", [1,2,3], 5)
     except Exception as e:
-        assert "pre_prompt" not in e.message
+        assert "pre_prompt" not in e.args[0]
 
 
 def test_menu_documentation():
@@ -344,6 +344,19 @@ def test_default_pre_prompt():
     p.expect_exact('Enter an option to continue: ')
 
 
+def test_deduplication():
+    p = pexpect.spawn('pimento foo bar baz bar foo', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  foo')
+    p.expect_exact('  bar')
+    p.expect_exact('  baz')
+    p.expect_exact('Enter an option to continue: ')
+    p = pexpect.spawn('pimento foo foo foo', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  foo')
+    p.expect_exact('Enter an option to continue: ')
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
@@ -382,4 +395,4 @@ if __name__ == '__main__':
         result = pimento.menu("Select one of the following:", [1, 2], default_index=0)
     elif args.list_only:
         result = pimento.menu([1, 2])
-    print 'Result is {}'.format(result)
+    print('Result is {}'.format(result))

@@ -133,7 +133,7 @@ def _check_default_index(items, default_index):
 
 def _check_stream(stream):
     '''Check that the stream is a file'''
-    if not isinstance(stream, file):
+    if not isinstance(stream, type(_sys.stderr)):
         raise TypeError("The stream given ({}) is not a file object.".format(stream))
 
 
@@ -188,6 +188,15 @@ def _cli():
     _sys.stdout.write(result + '\n')
 
 
+def _dedup(items):
+    '''Deduplicate an item list, and preserve order'''
+    deduped = []
+    for item in items:
+        if item not in deduped:
+            deduped.append(item)
+    return deduped
+
+
 # [ Public API ]
 def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, indexed=False,
          stream=_sys.stderr):
@@ -238,10 +247,12 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
             actual_post_prompt = "Enter an option to continue [{}]: "
     # - convert items to strings
     actual_items = [str(i) for i in items]
+    # - deduplicate items
+    deduped_items = _dedup(actual_items)
     # - set the default argument
     default = None
     if default_index is not None:
-        default = actual_items[default_index]
+        default = deduped_items[default_index]
     # other state init
     acceptable_response_given = False
     # Prompt Loop
@@ -249,9 +260,9 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
     while not acceptable_response_given:
         selection = None
         # Prompt and get response
-        response = _prompt(pre_prompt, actual_items, actual_post_prompt, default, indexed, stream)
+        response = _prompt(pre_prompt, deduped_items, actual_post_prompt, default, indexed, stream)
         # validate response
-        selection = _check_response(response, actual_items, default, indexed, stream)
+        selection = _check_response(response, deduped_items, default, indexed, stream)
         # NOTE: acceptable response logic is purposely verbose to be clear about the semantics.
         if selection is not None:
             acceptable_response_given = True
