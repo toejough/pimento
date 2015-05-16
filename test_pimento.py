@@ -271,6 +271,8 @@ def test_menu_documentation():
         indexed -  Boolean.  True if the options should be indexed.
         stream -  the stream to use to prompt the user.  Defaults to stderr so that stdout
             can be reserved for program output rather than interactive menu output.
+        insensitive -  allow insensitive matching.  Also drops items which case-insensitively match
+          prior items.
 
     Specifying a default index:
         The default index must index into the items.  In other words, `items[default_index]`
@@ -326,6 +328,8 @@ optional arguments:
                         The index of the item to use as the default
   --indexed, -i         Print indices with the options, and allow the user to
                         use them to choose.
+  --insensitive, -I     Perform insensitive matching. Also drops any items
+                        that case-insensitively match prior items.
 
 The default for the post prompt is "Enter an option to continue: ". If
 --default-index is specified, the default option value will be printed in the
@@ -354,6 +358,46 @@ def test_deduplication():
     p = pexpect.spawn('pimento foo foo foo', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  foo')
+    p.expect_exact('Enter an option to continue: ')
+
+
+def test_insensitive_matching():
+    p = pexpect.spawn('pimento FOO BAR BAZ --insensitive', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  FOO')
+    p.expect_exact('  BAR')
+    p.expect_exact('  BAZ')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline('Foo')
+    p.expect_exact('FOO')
+    p = pexpect.spawn('pimento FOO BAR BAZ --insensitive', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  FOO')
+    p.expect_exact('  BAR')
+    p.expect_exact('  BAZ')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline('bar')
+    p.expect_exact('BAR')
+    p = pexpect.spawn('pimento FOO BAR BAZ --insensitive', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  FOO')
+    p.expect_exact('  BAR')
+    p.expect_exact('  BAZ')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline('baZ')
+    p.expect_exact('BAZ')
+
+
+def test_insensitive_deduplication():
+    p = pexpect.spawn('pimento FOO bar baz bAr foo', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  FOO')
+    p.expect_exact('  bar')
+    p.expect_exact('  baz')
+    p.expect_exact('Enter an option to continue: ')
+    p = pexpect.spawn('pimento Foo fOo foO', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  Foo')
     p.expect_exact('Enter an option to continue: ')
 
 

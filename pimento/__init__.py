@@ -56,7 +56,7 @@ def _prompt(pre_prompt, items, post_prompt, default, indexed, stream):
     return response
 
 
-def _check_response(response, items, default, indexed, stream):
+def _check_response(response, items, default, indexed, stream, insensitive):
     '''Check the response against the items'''
     # Set selection
     selection = None
@@ -69,7 +69,11 @@ def _check_response(response, items, default, indexed, stream):
     # if not matched by an index, match by text
     if selection is None:
         # Check for text matches
-        matches = [i for i in items if i.startswith(response)]
+        # if insensitive, lowercase the comparison
+        if insensitive:
+            matches = [i for i in items if i.lower().startswith(response.lower())]
+        else:
+            matches = [i for i in items if i.startswith(response)]
         num_matches = len(matches)
         # Empty response, no default
         if response == '' and default is None:
@@ -179,27 +183,55 @@ def _cli():
         help='Print indices with the options, and allow the user to use them to choose.',
         action='store_true'
     )
+    parser.add_argument(
+         '--insensitive', '-I',
+        help=(
+            'Perform insensitive matching.  Also drops any items that case-insensitively match'
+            + ' prior items.'
+        ),
+        action='store_true'
+    )
     args = parser.parse_args()
     # argparse nargs is awkward.  Translate to be a proper plural.
     options = args.option
     # show the menu (via stderr)
-    result = menu(args.pre, options, args.post, args.default_index, args.indexed)
+    result = menu(
+        options,
+        pre_prompt=args.pre,
+        post_prompt=args.post,
+        default_index=args.default_index,
+        indexed=args.indexed,
+        insensitive=args.insensitive
+    )
     # print the result (to stdout)
     _sys.stdout.write(result + '\n')
 
 
-def _dedup(items):
-    '''Deduplicate an item list, and preserve order'''
+def _dedup(items, insensitive):
+    '''
+    Deduplicate an item list, and preserve order.
+
+    For case-insensitive lists, drop items if they case-insensitively match
+    a prior item.
+    '''
     deduped = []
-    for item in items:
-        if item not in deduped:
-            deduped.append(item)
+    if insensitive:
+        i_deduped = []
+        for item in items:
+            lowered = item.lower()
+            if lowered not in i_deduped:
+                deduped.append(item)
+                i_deduped.append(lowered)
+    else:
+        for item in items:
+            if item not in deduped:
+                deduped.append(item)
     return deduped
 
 
 # [ Public API ]
 def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, indexed=False,
-         stream=_sys.stderr):
+         stream=_sys.stderr, insensitive=False):
     '''
     Prompt with a menu.
 
@@ -211,6 +243,8 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
         indexed -  Boolean.  True if the options should be indexed.
         stream -  the stream to use to prompt the user.  Defaults to stderr so that stdout
             can be reserved for program output rather than interactive menu output.
+        insensitive -  allow insensitive matching.  Also drops items which case-insensitively match
+          prior items.
 
     Specifying a default index:
         The default index must index into the items.  In other words, `items[default_index]`
@@ -248,7 +282,7 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
     # - convert items to strings
     actual_items = [str(i) for i in items]
     # - deduplicate items
-    deduped_items = _dedup(actual_items)
+    deduped_items = _dedup(actual_items, insensitive)
     # - set the default argument
     default = None
     if default_index is not None:
@@ -262,7 +296,7 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
         # Prompt and get response
         response = _prompt(pre_prompt, deduped_items, actual_post_prompt, default, indexed, stream)
         # validate response
-        selection = _check_response(response, deduped_items, default, indexed, stream)
+        selection = _check_response(response, deduped_items, default, indexed, stream, insensitive)
         # NOTE: acceptable response logic is purposely verbose to be clear about the semantics.
         if selection is not None:
             acceptable_response_given = True

@@ -166,7 +166,6 @@ Please select one:
 * 30 -> 300 (selection matched no index, matched against items)
 
 ## deduplication
-
 If you pass multiple matching items into `menu`, it will deduplicate them for you.  This is to prevent the following scenario:
 ```
 pimento foo foo
@@ -181,6 +180,26 @@ Please select an option: foo
 ```
 You can't specify a choice any further in this case, so `pimento` deduplicates the list for you.
 If you expect your list of items not to need deduplication, you should check that prior to calling `menu`.
+
+## case-insensitivity
+`menu` will accept an `insensitive` argument, which will make the menu match user input to the menu options in a case-insensitive manner.
+```python
+from pimento import menu
+result = menu(
+  ['RED', 'Blue', 'green'],
+  insensitive=True
+)
+```
+Prints:
+```
+Options:
+  RED
+  Blue
+  green
+Enter an option to continue: 
+```
+Entering `red` will get you `RED`, `blue` will get you `Blue`, and `GREEN` will get you `green`.
+
 
 # CLI
 There is a standalone CLI tool of the same name (`pimento`), which is a wrapper for `pimento.menu`, and can be used to create simple menus quickly on the command line:
