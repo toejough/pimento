@@ -206,7 +206,7 @@ pip install git+https://github.com/toejough/pimento
 ```
 
 # testing
-pimento has only been tested on python 2.7.9.
+pimento has been tested on python 2.7.9 and 3.4.3.
 
 # API deprecation notice
 Prior to version v0.4.0, the signature for `menu` was:

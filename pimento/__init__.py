@@ -52,7 +52,7 @@ def _prompt(pre_prompt, items, post_prompt, default, indexed, stream):
     stream.write(full_menu)
     stream.flush()
     # Get user response
-    response = raw_input()
+    response = _sys.stdin.readline().rstrip()
     return response
 
 
@@ -97,9 +97,9 @@ def _check_response(response, items, default, indexed, stream):
 
 def _check_prompts(pre_prompt, post_prompt):
     '''Check that the prompts are strings'''
-    if not isinstance(pre_prompt, basestring):
+    if not isinstance(pre_prompt, str):
         raise TypeError("The pre_prompt was not a string!")
-    if post_prompt is not _NO_ARG and not isinstance(post_prompt, basestring):
+    if post_prompt is not _NO_ARG and not isinstance(post_prompt, str):
         raise TypeError("The post_prompt was given and was not a string!")
 
 
@@ -185,7 +185,7 @@ def _cli():
     # show the menu (via stderr)
     result = menu(args.pre, options, args.post, args.default_index, args.indexed)
     # print the result (to stdout)
-    print result
+    _sys.stdout.write(result + '\n')
 
 
 # [ Public API ]
@@ -219,7 +219,7 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
         result -  The full text of the unambiguously selected item.
     '''
     # deprecated use: pre_promt first, items second
-    if isinstance(items, basestring) and not isinstance(pre_prompt, basestring):
+    if isinstance(items, str) and not isinstance(pre_prompt, str):
         swap = items
         items = pre_prompt
         pre_prompt = swap
