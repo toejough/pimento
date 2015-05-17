@@ -134,21 +134,22 @@ using a default
 
 .. code:: python
 
-from pimento import menu
-result = menu(
-  ['red', 'blue', 'green'],
-  "which color?",
-  "Please select one [{}]: ",
-  default_index=0
-)
+  from pimento import menu
+  result = menu(
+    ['red', 'blue', 'green'],
+    "which color?",
+    "Please select one [{}]: ",
+    default_index=0
+  )
 
 Prints:
+::
 
-which color?
-  red
-  blue
-  green
-Please select one [red]: 
+  which color?
+    red
+    blue
+    green
+  Please select one [red]: 
 
 When a default_index is provided, it is valid to enter no value.  In this case, the default value (``red``, in this example) is returned.
 
@@ -159,24 +160,26 @@ When a default_index is provided, if ``{}`` is present in the post-prompt, it wi
 
 .. code:: python
 
-from pimento import menu
-result = menu(
-  ['red', 'blue', 'green'],
-  "which color?",
-  "Please select one [{}]: ",
-  default_index=0,
-  indexed=True
-)
+  from pimento import menu
+  result = menu(
+    ['red', 'blue', 'green'],
+    "which color?",
+    "Please select one [{}]: ",
+    default_index=0,
+    indexed=True
+  )
 
 Prints:
+::
 
-which color?
-  [0] red
-  [1] blue
-  [2] green
-Please select one [red]: 
+  which color?
+    [0] red
+    [1] blue
+    [2] green
+  Please select one [red]: 
 
 Choosing any of the following will return ``red``:
+
 * \<enter\> (to select the default)
 * ``r``
 * ``re``
@@ -184,14 +187,16 @@ Choosing any of the following will return ``red``:
 * 0 (index)
 
 When using indices, the selection is matched first by index, then by item.  Given the following menu...
+::
 
-which number?
-  [0] 100
-  [1] 200
-  [2] 300
-Please select one:
+  which number?
+    [0] 100
+    [1] 200
+    [2] 300
+  Please select one:
 
 ...the selection/result pairs are:
+
 * 0 -> 100 (selection treated as index)
 * 1 -> 200 (selection treated as index)
 * 2 -> 300 (selection treated as index)
@@ -200,23 +205,28 @@ Please select one:
 * 20 -> 200 (selection matched no index, matched against items)
 * 30 -> 300 (selection matched no index, matched against items)
 
-## deduplication
-If you pass multiple matching items into ``menu``, it will deduplicate them for you.  This is to prevent the following scenario:
+deduplication
+-------------
 
-pimento foo foo
-Options:
-  foo
-  foo
-Please select an option: foo
-[!] "foo" matches multiple choices:
-[!]   foo
-[!]   foo
-[!] Please specify your choice further.
+If you pass multiple matching items into ``menu``, it will deduplicate them for you.  This is to prevent the following scenario:
+::
+
+  pimento foo foo
+  Options:
+    foo
+    foo
+  Please select an option: foo
+  [!] "foo" matches multiple choices:
+  [!]   foo
+  [!]   foo
+  [!] Please specify your choice further.
 
 You can't specify a choice any further in this case, so ``pimento`` deduplicates the list for you.
 If you expect your list of items not to need deduplication, you should check that prior to calling ``menu``.
 
-## case-insensitivity
+case-insensitivity
+------------------
+
 ``menu`` will accept an ``insensitive`` argument, which will make the menu match user input to the menu options in a case-insensitive manner.
 
 .. code:: python
@@ -239,7 +249,7 @@ Prints:
 Entering ``red`` will get you ``RED``, ``blue`` will get you ``Blue``, and ``GREEN`` will get you ``green``.
 
 searching
-~~~~~~~~~
+---------
 
 ``menu`` will accept a ``search`` argument, which will make the menu search for the user input in the whole item string, rather than just at the start:
 
