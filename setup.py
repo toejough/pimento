@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pimento',
-    version='0.5.0',
+    version='0.5.1',
     description='Simple CLI Menus',
     long_description=open('README').read(),
     url='https://github.com/toejough/pimento',
@@ -27,7 +27,10 @@ setup(
 
             # Specify the Python versions you support here. In particular, ensure
             # that you indicate whether you support Python 2, Python 3 or both.
+            'Programming Language :: Python :: 2',
             'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3.4',
     ],
     keywords="menu cli",
     packages=find_packages(),
