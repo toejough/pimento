@@ -313,10 +313,10 @@ There is a standalone CLI tool of the same name (``pimento``), which is a wrappe
 installation
 ============
 
-Latest pushed to Pypi_ (v0.5.1_)
+Latest pushed to Pypi_ (v0.5.2_)
 
 .. _Pypi: https://pypi.python.org/pypi/pimento
-.. _v0.5.1: https://github.com/toejough/pimento/releases/tag/v0.5.1
+.. _v0.5.2: https://github.com/toejough/pimento/releases/tag/v0.5.2
 
 ::
 
