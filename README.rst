@@ -4,11 +4,18 @@ pimento
 
 simple CLI menu
 
-features
+* `examples`_
+* `features`_
+* `cli`_
+* `installation`_
+* `testing`_
+* `API deprecation notice`_
+
+examples
 ========
 
-a simple cli menu
------------------
+simple CLI menu prompting
+-------------------------
 
 There is a single required argument:
 
@@ -29,14 +36,73 @@ Prints:
     grey
   Enter an option to continue: 
 
-You may also enter your own pre-prompt:
+Entering ``r`` results in ``red`` being returned from the function.
+
+User input is matched case-sensitively from the beginning of each option.  Ambiguous, null, and invalid entries are handled, an error message displayed, and the menu reprompted automatically.
+
+This is the simplest, default usage.  For more options, see the following example and the `features`_ list.
+  
+cli menu with all the features
+------------------------------
+
+* custom pre-prompt
+* custom post-prompt
+* indexing
+* default selection
+* case-insensitivity
+* 'search' matching (vs 'match' matching)
+
+.. code:: python
+
+  from pimento import menu
+  result = menu(
+    ['RED', 'Red', 'blue', 'green', 'grey', 'light URPLE'],
+    pre_prompt='Available colors:',
+    post_prompt='Please select a color [{}]',
+    default_index=1,
+    indexed=True,
+    insensitive=True,
+    search=True
+  )
+
+Prints:
+::
+
+  Available colors:
+    [0] RED
+    [1] blue
+    [2] green
+    [3] grey
+    [4] light URPLE
+  Please select a color [blue]: 
+
+Entering ``urple`` will result in the function returning ``light URPLE``.
+
+features
+========
+
+* Sane defaults (see the `simple cli menu prompting`_ example)
+* `custom pre-prompt`_
+* `custom post-prompt`_
+* `partial matches`_
+* `re-prompting`_
+* `using a default`_
+* `using indices`_
+* `deduplication`_
+* `case-insensitivity`_
+* `searching`_
+
+custom pre-prompt
+-----------------
+
+You may specify any pre-prompt you wish to appear before the list of options:
 
 .. code:: python
 
   from pimento import menu
   result = menu(
     ['red', 'blue', 'green', 'grey'],
-    "Which color?"  # <--- custom pre_prompt arg
+    pre_prompt="Which color?"
   )
 
 Prints:
@@ -49,25 +115,28 @@ Prints:
     grey
   Enter an option to continue: 
 
-You may also enter your own post-prompt:
+custom post-prompt
+------------------
+
+You may specify any post-propmt you wish to appear after the list of options:
 
 .. code:: python
 
   from pimento import menu
   result = menu(
     ['red', 'blue', 'green', 'grey'],
-    "which color?",
-    "Please select one: "  # <--- custom post_prompt arg
+    post_prompt="Please select one: "
   )
 
 Prints:
 ::
 
-  which color?
+  Options:
     red
     blue
     green
     grey
+  Please select one:
 
 partial matches
 ---------------
