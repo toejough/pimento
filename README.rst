@@ -1,104 +1,135 @@
-# pimento
+=======
+pimento
+=======
+
 simple CLI menu
 
-# features
-## a simple cli menu
-There is a single required argument:
-* items - a finite iterable (list, tuple, etc) of items which the user will be prompted to choose from
-```python
-from pimento import menu
-result = menu(['red', 'blue', 'green', 'grey'])
-```
-Prints:
-```
-Options:
-  red
-  blue
-  green
-  grey
-Enter an option to continue: 
-```
-You may also enter your own pre-prompt:
-```python
-from pimento import menu
-result = menu(
-  ['red', 'blue', 'green', 'grey'],
-  "Which color?"  # <--- custom pre_prompt arg
-)
-```
-Prints:
-```
-Which color?
-  red
-  blue
-  green
-  grey
-Enter an option to continue: 
-```
-You may also enter your own post-prompt:
-```python
-from pimento import menu
-result = menu(
-  ['red', 'blue', 'green', 'grey'],
-  "which color?",
-  "Please select one: "  # <--- custom post_prompt arg
-)
-```
-Prints:
-```
-which color?
-  red
-  blue
-  green
-  grey
-Please select one: 
-```
+features
+========
 
-## partial matches
+a simple cli menu
+-----------------
+
+There is a single required argument:
+
+* items - a finite iterable (list, tuple, etc) of items which the user will be prompted to choose from
+
+.. code:: python
+
+  from pimento import menu
+  result = menu(['red', 'blue', 'green', 'grey'])
+
+Prints:
+::
+
+  Options:
+    red
+    blue
+    green
+    grey
+  Enter an option to continue: 
+
+You may also enter your own pre-prompt:
+
+.. code:: python
+
+  from pimento import menu
+  result = menu(
+    ['red', 'blue', 'green', 'grey'],
+    "Which color?"  # <--- custom pre_prompt arg
+  )
+
+Prints:
+::
+
+  Which color?
+    red
+    blue
+    green
+    grey
+  Enter an option to continue: 
+
+You may also enter your own post-prompt:
+
+.. code:: python
+
+  from pimento import menu
+  result = menu(
+    ['red', 'blue', 'green', 'grey'],
+    "which color?",
+    "Please select one: "  # <--- custom post_prompt arg
+  )
+
+Prints:
+::
+
+  which color?
+    red
+    blue
+    green
+    grey
+
+partial matches
+---------------
+
 The user can select either a full option or a partial match.  All of the following will result in the user selecting `blue`:
+
 * `b`
 * `bl`
 * `blu`
 * `blue`
 
-## re-prompting
-When an invalid option is entered, an actionable error message is printed, and the menu is re-prompted.
-### when no choice is entered:
-```
-which color?
-  red
-  blue
-  green
-  grey
-Please select one: 
-[!] an empty response is not valid.
-```
-### when an invalid choice is entered:
-```
-which color?
-  red
-  blue
-  green
-  grey
-Please select one: brown
-[!] "brown" does not match any of the valid choices.
-```
-### when an ambiguous choice is entered:
-If `gre` was entered...
-```
-which color?
-  red
-  blue
-  green
-  grey
-Please select one: gre
-[!] "gre" matches multiple choices:
-[!]   green
-[!]   grey
-[!] Please specify your choice further.
-```
+re-prompting
+------------
 
-## using a default
+When an invalid option is entered, an actionable error message is printed, and the menu is re-prompted.
+
+when no choice is entered:
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+  which color?
+    red
+    blue
+    green
+    grey
+  Please select one: 
+  [!] an empty response is not valid.
+
+when an invalid choice is entered:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+  which color?
+    red
+    blue
+    green
+    grey
+  Please select one: brown
+  [!] "brown" does not match any of the valid choices.
+
+when an ambiguous choice is entered:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If `gre` was entered...
+::
+
+  which color?
+    red
+    blue
+    green
+    grey
+  Please select one: gre
+  [!] "gre" matches multiple choices:
+  [!]   green
+  [!]   grey
+  [!] Please specify your choice further.
+
+using a default
+---------------
+
 `menu` will accept a default_index keyword argument.  `items[default_index]` must be valid.  An invalid index will result in an exception being raised at call time.
 ```python
 from pimento import menu
