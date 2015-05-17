@@ -155,7 +155,9 @@ When a default_index is provided, it is valid to enter no value.  In this case, 
 
 When a default_index is provided, if ``{}`` is present in the post-prompt, it will be replaced with the value of ``items[default_index]``.  It is recommended, but not required, that if you set a default_index, you should display the default value to the users via this substitution mechanism.
 
-## using indices
+using indices
+-------------
+
 ``menu`` will accept an ``indexed`` argument.  When set to ``True``, indices will be printed with each option, and it will be valid to enter an index to choose an option.
 
 .. code:: python
