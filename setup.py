@@ -7,7 +7,7 @@ setup(
     name='pimento',
     version='0.5.1',
     description='Simple CLI Menus',
-    long_description=open('README').read(),
+    long_description=open('README.rst').read(),
     url='https://github.com/toejough/pimento',
     author='toejough',
     author_email='toejough@gmail.com',
