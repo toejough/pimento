@@ -1,1 +1,46 @@
-README.md
+a simple CLI menu
+
+There is a single required argument:
+* items - a finite iterable (list, tuple, etc) of items which the user will be prompted to choose from
+
+    from pimento import menu
+    result = menu(['red', 'blue', 'green', 'grey'])
+
+Prints:
+    Options:
+      red
+      blue
+      green
+      grey
+    Enter an option to continue: 
+
+There are many optional arguments:
+
+    from pimento import menu
+    result = menu(
+        ['RED robin', 'Blue Bonnet', 'green GIANT'],
+        'Food Sources:',
+        'Select one [{}]:',
+        default_index=1,
+        indexed=True,
+        insensitive=True,
+        search=True
+    )
+
+Prints:
+    Food Sources:
+        [0] 'RED robin'
+        [1] 'Blue Bonnet'
+        [2] 'green GIANT'
+    Select one [Blue Bonnet]:
+
+Entering any of the following will get you a result of "Blue Bonnet":
+* <enter>
+* 1
+* Bl
+* bonnet
+
+There is a standalone CLI tool of the same name ('pimento'), which is a wrapper for 'pimento.menu', and can be used to create simple menus quickly on the command line.
+
+pimento has been tested on python 2.7.9 and 3.4.3 on OSX.
+
