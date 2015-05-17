@@ -256,7 +256,7 @@ post prompt as well.
 ```
 
 # installation
-Latest pushed to [Pypi](https://pypi.python.org/pypi/pimento) ([v0.4.0](https://github.com/toejough/pimento/releases/tag/v0.4.0))
+Latest pushed to [Pypi](https://pypi.python.org/pypi/pimento) ([v0.5.0](https://github.com/toejough/pimento/releases/tag/v0.5.0))
 ```bash
 pip install pimento
 ```
@@ -266,7 +266,7 @@ pip install git+https://github.com/toejough/pimento
 ```
 
 # testing
-pimento has been tested on python 2.7.9 and 3.4.3.
+pimento has been tested on python 2.7.9 and 3.4.3 on OSX.
 
 # API deprecation notice
 Prior to version v0.4.0, the signature for `menu` was:
