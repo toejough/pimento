@@ -306,7 +306,8 @@ def test_cli_script_use():
     p.expect_exact('usage: pimento [-h] [--pre TEXT] [--post TEXT] [--default-index INT]')
     p.expect_exact('[--indexed]')
     p.expect_exact('option [option ...]')
-    p.expect_exact('pimento: error: too few arguments')
+    p.expect_exact(['pimento: error: too few arguments',
+                    'pimento: error: the following arguments are required: option'])
 
 
 def test_cli_script_help():
