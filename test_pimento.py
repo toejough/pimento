@@ -433,6 +433,24 @@ def test_search():
     p.expect_exact('dairy queen')
 
 
+def test_arrows():
+    p = pexpect.spawn('pimento foo bar', timeout=1)
+    p.expect_exact('Enter an option to continue: ')
+    p.send('oo')
+    p.sendline()
+    p.expect_exact('[!] "oo" does not match any of the valid choices.')
+    p.expect_exact('Enter an option to continue: ')
+    KEY_UP = '\x1b[A'
+    #KEY_DOWN = '\x1b[B'
+    #KEY_RIGHT = '\x1b[C'
+    KEY_LEFT = '\x1b[D'
+    p.send(KEY_UP)
+    p.expect_exact('oo')
+    p.send(KEY_LEFT*2)
+    p.sendline('f')
+    p.expect('\r\nfoo')
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
