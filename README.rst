@@ -86,6 +86,7 @@ features
 * `custom post-prompt`_
 * `partial matches`_
 * `re-prompting`_
+* `tab-completion`_
 * `using a default`_
 * `using indices`_
 * `deduplication`_
@@ -196,6 +197,13 @@ If ``gre`` was entered...
   [!]   green
   [!]   grey
   [!] Please specify your choice further.
+
+tab-completion
+--------------
+
+Tab completion of options is supported!  At the moment, this is supported via ``readline``, so this is a \*nix-only feature.
+Arrow-key navigation of history and current line is also supported via the ``readline`` library.
+
 
 using a default
 ---------------
