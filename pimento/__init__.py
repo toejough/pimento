@@ -8,6 +8,13 @@ Make simple python cli menus!
 # import as _name so that they do not show up as part of the module
 import sys as _sys
 import argparse as _argparse
+try:
+    # just importing readline means that 'input' will use it.
+    # this is unpythonic, but I did not write the builtins.
+    import readline as _readline
+except ImportError:
+    # No readline.  Arrow support will be disabled
+    pass
 
 
 # [ GLOBALS ]
@@ -47,12 +54,19 @@ def _prompt(pre_prompt, items, post_prompt, default, indexed, stream):
         item_text = item_format.format(**components)
         item_text_list.append(item_text)
     # build full menu
-    menu_parts = [pre_prompt] + item_text_list + [post_prompt]
-    full_menu = '\n'.join(menu_parts)
+    menu_parts = [pre_prompt] + item_text_list
+    full_menu = '\n'.join(menu_parts) + '\n'
     stream.write(full_menu)
     stream.flush()
     # Get user response
-    response = _sys.stdin.readline().rstrip()
+    # - py 2/3 compatibility
+    get_input = input
+    try:
+        get_input = raw_input
+    except NameError:
+        pass
+    # - actuall get input
+    response = get_input(post_prompt)
     return response
 
 
