@@ -91,6 +91,7 @@ features
 * `deduplication`_
 * `case-insensitivity`_
 * `searching`_
+* `arrow keys`_
 
 custom pre-prompt
 -----------------
@@ -343,6 +344,22 @@ Prints:
 
 Entering ``bull`` will return ``RED bull``.
 
+arrow keys
+----------
+
+When running in a \*nix environment, ``menu`` will use the Gnu ``readline`` library to provide support for command history and the use of arrow keys to edit entered text:
+::
+
+  Options:
+    foo
+  Enter an option to continue: oo
+  [!] "oo" does not match any of the valid choices.
+  Options:
+    foo
+  Enter an option to continue: <up><left><left>f<enter>
+  foo
+
+In the above example, the user hit ``<up>``, which brought back 'oo' and put the cursor at the end.  They then hit ``<left>`` twice to get the cursor back to the beginning of the word, inserted 'f' to spell the valid option 'foo', and hit enter.
 
 CLI
 ===
