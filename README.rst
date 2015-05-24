@@ -50,7 +50,7 @@ cli menu with all the features
 * indexing
 * default selection
 * case-insensitivity
-* 'search' matching (vs 'match' matching)
+* 'fuzzy' matching
 
 .. code:: python
 
@@ -62,7 +62,7 @@ cli menu with all the features
     default_index=1,
     indexed=True,
     insensitive=True,
-    search=True
+    fuzzy=True
   )
 
 Prints:
@@ -90,8 +90,8 @@ features
 * `using indices`_
 * `deduplication`_
 * `case-insensitivity`_
-* `searching`_
 * `arrow keys`_
+* `fuzzy matching`_
 
 custom pre-prompt
 -----------------
@@ -320,29 +320,32 @@ Prints:
 
 Entering ``red`` will get you ``RED``, ``blue`` will get you ``Blue``, and ``GREEN`` will get you ``green``.
 
-searching
----------
+fuzzy matching
+--------------
 
-``menu`` will accept a ``search`` argument, which will make the menu search for the user input in the whole item string, rather than just at the start:
+``menu`` will accept a ``fuzzy`` argument, which will make the menu search for the words in the user input in the words of the item string,
+rather than just matching the user input from the start of the option:
 
 .. code:: python
 
     from pimento import menu
     result = menu(
-      ['RED bull', 'Blue bonnet', 'green giant'],
-      insensitive=True
+      ['a blue thing', 'one green thing'],
+      fuzzy=True
     )
 
 Prints:
 ::
 
     Options:
-      RED bull
-      Blue bonnet
-      green giant
+      a blue thing
+      one green thing
     Enter an option to continue: 
 
-Entering ``bull`` will return ``RED bull``.
+Entering ``thing n`` will return ``one green thing``.
+
+This method matches ``thing`` to both options (both contain the full word ``thing``), then matches ``n`` only to ``one green thing``,
+because that's the only option with an unmatched ``n`` (in both ``one`` and ``green``).
 
 arrow keys
 ----------
@@ -389,9 +392,7 @@ There is a standalone CLI tool of the same name (``pimento``), which is a wrappe
                             use them to choose.
       --insensitive, -I     Perform insensitive matching. Also drops any items
                             that case-insensitively match prior items.
-      --search, -s          search for the user input anywhere in the item
-                            strings, not just at the beginning.
-
+      --fuzzy, -f           search for the individual words in the user input anywhere in the item strings.
 
     The default for the post prompt is "Enter an option to continue: ". If
     --default-index is specified, the default option value will be printed in the
@@ -426,10 +427,13 @@ pimento has been tested on python 2.7.9 and 3.4.3 on OSX.  To test yourself:
     pip install tox
     tox
 
-API deprecation notice
-======================
+API deprecation notices
+=======================
 
-Prior to version v0.4.0, the signature for ``menu`` was:
+Prompt ordering
+---------------
+
+Prior to version 0.4.0, the signature for ``menu`` was:
 
 .. code:: python
 
@@ -444,3 +448,10 @@ In v0.4.0, the signature changed to:
 To ease transition of any users, there is special code in place to determine which order the caller is passing in ``items`` and ``pre_prompt``.  All pre-0.4.0 code should continue to work, but passing ``pre_prompt`` as the first argument is a deprecated use and should be discontinued.  Old code should be updated.  The compatibility mode will be discontinued soon, but definitely by 1.0.0.
 
 The API was changed to allow the simplest possible calling/use of the ``menu`` function.  The original signature was chosen because I thought that there wasn't a sensible default value, but "Options:" seems sensible enough for a generic default.
+
+Search matching
+---------------
+
+As of version 0.6.0, the ``search`` method of matching is deprecated.  It will be removed within a few releases, but definitely by v1.0.0.
+
+``fuzzy`` matching matches the same cases, and is more versatile.

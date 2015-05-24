@@ -4,10 +4,12 @@ Test suite for pimento
 
 
 # [ Imports ]
-# [ -Third Party ]
+# [ - Python ]
+import inspect
+# [ - Third Party ]
 import pexpect
 import pytest
-# [ -Project ]
+# [ - Project ]
 import pimento
 
 
@@ -273,7 +275,8 @@ def test_menu_documentation():
             can be reserved for program output rather than interactive menu output.
         insensitive -  allow insensitive matching.  Also drops items which case-insensitively match
           prior items.
-        search -  search for the user input anwhere in the item strings, not just at the beginning.
+        search -  [deprecated] search for the user input anwhere in the item strings, not just at the beginning.
+        fuzzy -  search for the individual words in the user input anywhere in the item strings.
 
     Specifying a default index:
         The default index must index into the items.  In other words, `items[default_index]`
@@ -449,6 +452,65 @@ def test_arrows():
     p.send(KEY_LEFT*2)
     p.sendline('f')
     p.expect('\r\nfoo')
+
+
+def test_fuzzy_matching():
+    p = pexpect.spawn('pimento "a blue thing" "one green thing" --fuzzy', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  a blue thing')
+    p.expect_exact('  one green thing')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline('thing')
+    p.expect_exact('[!] "thing" matches multiple choices:')
+    p.expect_exact('[!]   a blue thing')
+    p.expect_exact('[!]   one green thing')
+    p.expect_exact('[!] Please specify your choice further.')
+    p.sendline('thing e')
+    p.expect_exact('[!] "thing e" matches multiple choices:')
+    p.expect_exact('[!]   a blue thing')
+    p.expect_exact('[!]   one green thing')
+    p.expect_exact('[!] Please specify your choice further.')
+    p.sendline('thing e e')
+    p.expect_exact('one green thing')
+    p = pexpect.spawn('pimento "a blue thing" "one green thing" --fuzzy', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  a blue thing')
+    p.expect_exact('  one green thing')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline('thing blue')
+    p.expect_exact('a blue thing')
+
+
+def test_insensitive_fuzzy_matching():
+    p = pexpect.spawn('pimento "a BLUE thing" "one GREEN thing" -I --fuzzy', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  a BLUE thing')
+    p.expect_exact('  one GREEN thing')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline('THING')
+    p.expect_exact('[!] "THING" matches multiple choices:')
+    p.expect_exact('[!]   a BLUE thing')
+    p.expect_exact('[!]   one GREEN thing')
+    p.expect_exact('[!] Please specify your choice further.')
+    p.sendline('thing e')
+    p.expect_exact('[!] "thing e" matches multiple choices:')
+    p.expect_exact('[!]   a BLUE thing')
+    p.expect_exact('[!]   one GREEN thing')
+    p.expect_exact('[!] Please specify your choice further.')
+    p.sendline('thing e e')
+    p.expect_exact('one GREEN thing')
+    p = pexpect.spawn('pimento "a BLUE thing" "one GREEN thing" --fuzzy', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  a BLUE thing')
+    p.expect_exact('  one GREEN thing')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline('thing blue')
+    p.expect_exact('a BLUE thing')
+
+
+def test_functions_documented():
+    for name, func in inspect.getmembers(pimento, inspect.isfunction):
+        assert func.__doc__, "{} not documented!".format(name)
 
 
 # [ Manual Interaction ]
