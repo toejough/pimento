@@ -9,7 +9,7 @@ simple CLI menu
 * `cli`_
 * `installation`_
 * `testing`_
-* `API deprecation notice`_
+* `API deprecation notices`_
 
 examples
 ========
