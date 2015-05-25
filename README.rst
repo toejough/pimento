@@ -51,12 +51,14 @@ cli menu with all the features
 * default selection
 * case-insensitivity
 * 'fuzzy' matching
+* deduplication
+* removal of empty items
 
 .. code:: python
 
   from pimento import menu
   result = menu(
-    ['RED', 'Red', 'blue', 'green', 'grey', 'light URPLE'],
+    ['', 'RED', 'Red', 'blue', 'green', 'grey', 'green', 'light URPLE'],
     pre_prompt='Available colors:',
     post_prompt='Please select a color [{}]',
     default_index=1,
@@ -90,6 +92,8 @@ features
 * `using a default`_
 * `using indices`_
 * `deduplication`_
+* `removal of empty items`_
+* `strips trailing whitespace`_
 * `case-insensitivity`_
 * `arrow keys`_
 * `fuzzy matching`_
@@ -302,7 +306,57 @@ If you pass multiple matching items into ``menu``, it will deduplicate them for 
   [!] Please specify your choice further.
 
 You can't specify a choice any further in this case, so ``pimento`` deduplicates the list for you.
-If you expect your list of items not to need deduplication, you should check that prior to calling ``menu``.
+If you expect your list of items not to need deduplication, and you care about duplicates, you should check for them prior to calling ``menu``.
+
+The default index, if specified, will be used to select the default from the list prior to deduplication:
+::
+
+  pimento bar foo foo -d 2
+  Options:
+    bar
+    foo
+  Please select an option [foo]: <enter>
+
+In the above example, ``pimento`` prints 'foo' to stdout.
+
+removal of empty items
+----------------------
+
+If you pass empty items into ``menu``, it will remove them for you.  This is to prevent the following scenario:
+::
+
+  pimento ''
+  Options:
+  
+  Please select an option: <enter>
+  [!] an empty response is not valid.
+  Options:
+  
+  Please select an option: 
+
+You can't specify an empty choice, and an empty choice doesn't make sense anyway, so ``pimento`` removes them for you.
+If all you had was empty choices, the call will fail with a ValueError about the list being empty.
+If you expect your list of items not to need removal of empty items, and you care if there are any, you should check that prior to calling ``menu``.
+
+The default index, if specified, will be used to select the default from the list prior to removal of empty items:
+::
+
+  pimento '' bar foo -d 2
+  Options:
+    bar
+    foo
+  Please select an option [foo]: <enter>
+
+In the above example, ``pimento`` prints 'foo' to stdout.
+
+strips trailing whitespace
+--------------------------
+
+Trailing whitespace is stripped from each option passed in.
+A whitespace item is defined for ``pimento`` as it is by python - typically space, tab, newline, carriage return.
+
+* If stripping whitespace means that the item becomes a duplicate of another item, it will be removed according to the description in `deduplication`_.
+* If it means that the item becomes empty it is removed according to the description in `removal of empty items`_.
 
 case-insensitivity
 ------------------

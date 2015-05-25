@@ -328,7 +328,7 @@ def _check_items(items):
 
 
 def _check_default_index(items, default_index):
-    '''Check that the default is in the list'''
+    '''Check that the default is in the list, and not empty'''
     num_items = len(items)
     if default_index is not None and not isinstance(default_index, int):
         raise TypeError("The default index ({}) is not an integer".format(default_index))
@@ -336,6 +336,8 @@ def _check_default_index(items, default_index):
         raise ValueError("The default index ({}) >= length of the list ({})".format(default_index, num_items))
     if default_index is not None and default_index < 0:
         raise ValueError("The default index ({}) < 0.".format(default_index))
+    if default_index is not None and not items[default_index]:
+        raise ValueError("The default index ({}) points to an empty item.".format(default_index))
 
 
 def _check_stream(stream):
@@ -405,19 +407,23 @@ def _cli():
     args.search = '--search' in unknown or '-s' in unknown
     # argparse nargs is awkward.  Translate to be a proper plural.
     options = args.option
-    # show the menu (via stderr)
-    result = menu(
-        options,
-        pre_prompt=args.pre,
-        post_prompt=args.post,
-        default_index=args.default_index,
-        indexed=args.indexed,
-        insensitive=args.insensitive,
-        search=args.search,
-        fuzzy=args.fuzzy
-    )
-    # print the result (to stdout)
-    _sys.stdout.write(result + '\n')
+    # show the menu
+    try:
+        result = menu(
+            options,
+            pre_prompt=args.pre,
+            post_prompt=args.post,
+            default_index=args.default_index,
+            indexed=args.indexed,
+            insensitive=args.insensitive,
+            search=args.search,
+            fuzzy=args.fuzzy
+        )
+        # print the result (to stdout)
+        _sys.stdout.write(result + '\n')
+    except Exception as e:
+        _sys.stdout.write("ERROR: {}\n".format(e))
+        exit(1)
 
 
 def _dedup(items, insensitive):
@@ -495,14 +501,18 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
             actual_post_prompt = "Enter an option to continue: "
         else:
             actual_post_prompt = "Enter an option to continue [{}]: "
-    # - convert items to strings
-    actual_items = [str(i) for i in items]
-    # - deduplicate items
-    deduped_items = _dedup(actual_items, insensitive)
+    # - convert items to rstripped strings
+    items = [str(i).rstrip() for i in items]
     # - set the default argument
     default = None
     if default_index is not None:
-        default = deduped_items[default_index]
+        default = items[default_index]
+    # - deduplicate items
+    items = _dedup(items, insensitive)
+    # - remove empty options
+    items = [i for i in items if i]
+    # - re-check the items
+    _check_items(items)
     # other state init
     acceptable_response_given = False
     _tab_complete_init(items, actual_post_prompt, insensitive, fuzzy, stream)
@@ -511,9 +521,9 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
     while not acceptable_response_given:
         selection = None
         # Prompt and get response
-        response = _prompt(pre_prompt, deduped_items, actual_post_prompt, default, indexed, stream)
+        response = _prompt(pre_prompt, items, actual_post_prompt, default, indexed, stream)
         # validate response
-        selection = _check_response(response, deduped_items, default, indexed, stream, insensitive, search, fuzzy)
+        selection = _check_response(response, items, default, indexed, stream, insensitive, search, fuzzy)
         # NOTE: acceptable response logic is purposely verbose to be clear about the semantics.
         if selection is not None:
             acceptable_response_given = True
