@@ -13,7 +13,9 @@ try:
     # this is unpythonic, but I did not write the builtins.
     import readline as _readline
 except ImportError:
-    # No readline.  Arrow support will be disabled
+    # No readline.
+    # Arrow support will be disabled
+    # Tab-completion will be disabled
     pass
 
 
@@ -25,6 +27,154 @@ _NO_ARG=object()
 
 
 # [ Private API ]
+def _get_standard_tc_matches(text, full_text, options):
+    '''
+    get the standard tab completions.
+    These are the options which could complete the full_text.
+    '''
+    final_matches = [o for o in options if o.startswith(full_text)]
+    return final_matches
+
+
+def _get_fuzzy_tc_matches(text, full_text, options):
+    '''
+    Get the options that match the full text, then from each option
+    return only the individual words which have not yet been matched
+    which also match the text being tab-completed.
+    '''
+    # get the options which match the full text
+    matching_options = _get_fuzzy_matches(full_text, options)
+    # only return the unmatched words which match the text
+    # being tab-completed
+    final_matches = []
+    entered_words = full_text.split(' ')
+    # get the words from each option which have not been
+    # previously matched, and which match the text being
+    # completed.
+    for option in matching_options:
+        already_matched = entered_words[:]
+        already_matched.remove(text)
+        option_words = option.split()
+        # strip out full-word matches
+        for word in already_matched:
+            if word in option_words:
+                option_words.remove(word)
+                already_matched.remove(word)
+            # else it was a partial, too
+        # strip out partial-word matches
+        for partial in sorted(
+            already_matched,
+            key=lambda p: len(p),
+            reverse=True
+        ):
+            for word in option_words:
+                if partial in word:
+                    option_words.remove(word)
+                    already_matched.remove(partial)
+                    assert len(already_matched) == 0, "{} not found in {}: _get_fuzzy_matches made a mistake".format(
+                        already_matched, option
+                    )
+        # get unique words left which match the text
+        for word in option_words:
+            if text in word and word not in final_matches:
+                final_matches.append(word)
+    return final_matches
+
+
+def _tab_complete_init(items, post_prompt, insensitive, fuzzy, stream):
+    '''Create and use a tab-completer object'''
+    # using some sort of nested-scope construct is
+    # required because readline doesn't pass the necessary args to
+    # its callback functions
+    def _get_matches(text, state):
+        '''
+        Get a valid match, given:
+            text - the portion of text currently trying to complete
+            state - the index 0..inf which is an index into the list
+            of valid matches.
+        Put another way, given the text, this function is supposed
+        to return matches_for(text)[state], where 'matches_for' returns
+        the matches for the text from the options.
+        '''
+        # a copy of all the valid options
+        options = [o for o in items]
+        # the full user-entered text
+        full_text = _readline.get_line_buffer()
+        # insensitivity
+        if insensitive:
+            options = [o.lower() for o in options]
+            text = text.lower()
+            full_text = full_text.lower()
+        # matches
+        matches = []
+        try:
+            # get matches
+            if fuzzy:
+                # space-delimited - match words
+                _readline.set_completer_delims(' ')
+                matches = _get_fuzzy_tc_matches(text, full_text, options)
+            else:
+                # not delimited - match the whole text
+                _readline.set_completer_delims('')
+                matches = _get_standard_tc_matches(text, full_text, options)
+            # re-sensitization not necessary - this completes what's on
+            # the command prompt.  If the search is insensitive, then
+            # a lower-case entry will match as well as an original-case
+            # entry.
+        except Exception:
+            # try/catch is for debugging only.  The readline
+            # lib swallows exceptions and just doesn't print anything
+            #import traceback as _traceback
+            #print(_traceback.format_exc())
+            raise
+        return matches[state]
+
+    def _completion_display(substitution, matches, length):
+        '''
+        Display the matches for the substitution, which is the
+        text being completed.
+        '''
+        try:
+            response = substitution
+            stream.write("\n[!] \"{response}\" matches multiple options:\n".format(
+                response=response
+            ))
+            if insensitive:
+                ordered_matches = [o for o in items if substitution in o.lower()]
+            else:
+                ordered_matches = [o for o in items if substitution in o]
+            for match in ordered_matches:
+                stream.write("[!]   {}\n".format(match))
+            stream.write("[!] Please specify your choice further.\n")
+            # the full user-entered text
+            full_text = _readline.get_line_buffer()
+            stream.write(post_prompt + full_text)
+            stream.flush()
+        except Exception:
+            # try/catch is for debugging only.  The readline
+            # lib swallows exceptions and just doesn't print anything
+            #import traceback as _traceback
+            #print(_traceback.format_exc())
+            raise
+
+    # activate tab completion
+    # got libedit bit from:
+    # https://stackoverflow.com/a/7116997
+    # -----------------------------------
+    if "libedit" in _readline.__doc__:
+        # tabcompletion init for libedit
+        _readline.parse_and_bind("bind ^I rl_complete")
+    else:
+        # tabcompletion init for actual readline
+        _readline.parse_and_bind("tab: complete")
+    # -----------------------------------
+    # set the function that will actually provide the valid completions
+    _readline.set_completer(_get_matches)
+    # set the function that will display the valid completions
+    _readline.set_completion_display_matches_hook(_completion_display)
+    #_readline.set_completer_delims('')
+
+
 def _prompt(pre_prompt, items, post_prompt, default, indexed, stream):
     '''
     Prompt once.
@@ -94,7 +244,6 @@ def _get_fuzzy_matches(response, items):
     return [i for i in items if _fuzzily_matches(response, i)]
 
 
-
 def _check_response(response, items, default, indexed, stream, insensitive, search, fuzzy):
     '''Check the response against the items'''
     # Set selection
@@ -107,30 +256,27 @@ def _check_response(response, items, default, indexed, stream, insensitive, sear
                 selection = items[index_response]
     # if not matched by an index, match by text
     if selection is None:
+        # insensivitize, if necessary
+        original_items = items[:]
+        original_response = response
+        if insensitive:
+            response = response.lower()
+            items = [i.lower() for i in items]
         # Check for text matches
         if fuzzy:
-            if insensitive:
-                insensitive_matches = _get_fuzzy_matches(
-                    response.lower(),
-                    [i.lower() for i in items]
-                )
-                matches = [
-                    m for m in items
-                    if m.lower() in insensitive_matches
-                ]
-            else:
-                matches = _get_fuzzy_matches(response, items)
+            matches = _get_fuzzy_matches(response, items)
         # if insensitive, lowercase the comparison
         elif search:
-            if insensitive:
-                matches = [i for i in items if response.lower() in i.lower()]
-            else:
-                matches = [i for i in items if response in i]
+            matches = [i for i in items if response in i]
         else:
-            if insensitive:
-                matches = [i for i in items if i.lower().startswith(response.lower())]
-            else:
-                matches = [i for i in items if i.startswith(response)]
+            matches = [i for i in items if i.startswith(response)]
+        # re-sensivitize if necessary
+        if insensitive:
+            matches = [
+                i for i in original_items
+                if i.lower() in matches
+            ]
+            response = original_response
         num_matches = len(matches)
         # Empty response, no default
         if response == '' and default is None:
@@ -359,6 +505,7 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
         default = deduped_items[default_index]
     # other state init
     acceptable_response_given = False
+    _tab_complete_init(items, actual_post_prompt, insensitive, fuzzy, stream)
     # Prompt Loop
     # - wait until an acceptable response has been given
     while not acceptable_response_given:
