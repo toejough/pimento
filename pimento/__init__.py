@@ -421,6 +421,9 @@ def _cli():
         )
         # print the result (to stdout)
         _sys.stdout.write(result + '\n')
+    except KeyboardInterrupt:
+        _sys.stderr.write("\nCTRL-C detected. Exiting.\n")
+        _sys.stderr.flush()
     except Exception as e:
         _sys.stdout.write("ERROR: {}\n".format(e))
         exit(1)
