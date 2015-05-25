@@ -644,6 +644,13 @@ def test_empty_default_selection_cli():
     p.expect_exact('ERROR: The default index (0) points to an empty item.')
 
 
+def test_ctrl_c():
+    p = pexpect.spawn('pimento foo', timeout=1)
+    p.expect_exact('Enter an option to continue:')
+    p.sendcontrol('c')
+    p.expect_exact('CTRL-C detected. Exiting.')
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
