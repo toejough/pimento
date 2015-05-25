@@ -599,6 +599,51 @@ def test_functions_documented():
         assert func.__doc__, "{} not documented!".format(name)
 
 
+def test_empty_option_cli():
+    p = pexpect.spawn('pimento "" "" ""', timeout=1)
+    p.expect_exact('ERROR: The item list is empty.')
+    p = pexpect.spawn('pimento "" "a BLUE thing" "" "one GREEN thing" "" --fuzzy', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  a BLUE thing')
+    p.expect_exact('  one GREEN thing')
+    p.expect_exact('Enter an option to continue: ')
+
+
+def test_empty_option_menu():
+    with pytest.raises(ValueError):
+        pimento.menu([''])
+
+
+def test_whitespace_option_menu():
+    with pytest.raises(ValueError):
+        pimento.menu(['', ' ', '\t', '\n', '\r  '])
+
+
+def test_pre_default_selection():
+    p = pexpect.spawn('pimento "" "RED" " " "red" "\n\t\r" "green" -Id 5', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  RED')
+    p.expect_exact('  green')
+    p.expect_exact('Enter an option to continue [green]: ')
+
+
+def test_rstrip_items():
+    p = pexpect.spawn('pimento "red " "red  " "red\t"', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  red')
+    p.expect_exact('Enter an option to continue: ')
+
+
+def test_empty_default_selection():
+    with pytest.raises(ValueError):
+        pimento.menu(['', 'foo'], default_index=0)
+
+
+def test_empty_default_selection_cli():
+    p = pexpect.spawn('pimento "" "foo" -d 0', timeout=1)
+    p.expect_exact('ERROR: The default index (0) points to an empty item.')
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
