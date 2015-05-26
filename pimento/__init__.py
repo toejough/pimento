@@ -8,6 +8,7 @@ Make simple python cli menus!
 # import as _name so that they do not show up as part of the module
 import sys as _sys
 import argparse as _argparse
+import os.path as _path
 try:
     # just importing readline means that 'input' will use it.
     # this is unpythonic, but I did not write the builtins.
@@ -405,7 +406,7 @@ def _cli():
     parser.add_argument(
         'option',
         help='The option(s) to present to the user.',
-        nargs='+'
+        nargs='*'
     )
     parser.add_argument(
         '--pre', '-p',
@@ -449,6 +450,15 @@ def _cli():
     args.search = '--search' in unknown or '-s' in unknown
     # argparse nargs is awkward.  Translate to be a proper plural.
     options = args.option
+    # read more options from stdin if there are are any
+    # but only if we're on a 'nix system with tty's
+    tty = '/dev/tty'
+    if not _sys.stdin.isatty() and _path.exists(tty):
+        options += [l.rstrip() for l in _sys.stdin]
+        # switch to the main tty
+        # this solution (to being interactive after reading from pipe)
+        # comes from: https://stackoverflow.com/questions/6312819/pipes-and-prompts-in-python-cli-scripts
+        _sys.stdin = open(tty)
     # show the menu
     try:
         result = menu(
