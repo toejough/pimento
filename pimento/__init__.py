@@ -244,6 +244,44 @@ def _get_fuzzy_matches(response, items):
     return [i for i in items if _fuzzily_matches(response, i)]
 
 
+def _exact_fuzzy_match(response, match, insensitive):
+    '''
+    Return True if the response matches fuzzily exactly.
+    Insensitivity is taken into account.
+    '''
+    if insensitive:
+        response = response.lower()
+        match = match.lower()
+    r_words = response.split()
+    m_words = match.split()
+    # match whole words first
+    for word in r_words:
+        if word in m_words:
+            r_words.remove(word)
+            m_words.remove(word)
+    # no partial matches allowed
+    # if all the items in the response were matched,
+    # and all the items in the match were matched,
+    # then this is an exact fuzzy match
+    return len(r_words) == 0 and len(m_words) == 0
+
+
+def _exact_match(response, matches, insensitive, fuzzy):
+    '''
+    returns an exact match, if it exists, given parameters
+    for the match
+    '''
+    for match in matches:
+        if response == match:
+            return match
+        elif insensitive and response.lower() == match.lower():
+            return match
+        elif fuzzy and _exact_fuzzy_match(response, match, insensitive):
+            return match
+    else:
+        return None
+
+
 def _check_response(response, items, default, indexed, stream, insensitive, search, fuzzy):
     '''Check the response against the items'''
     # Set selection
@@ -293,12 +331,16 @@ def _check_response(response, items, default, indexed, stream, insensitive, sear
             selection = matches[0]
         # Multiple matches
         else:
-            stream.write("[!] \"{response}\" matches multiple choices:\n".format(
-                response=response
-            ))
-            for match in matches:
-                stream.write("[!]   {}\n".format(match))
-            stream.write("[!] Please specify your choice further.\n")
+            # look for an exact match
+            selection = _exact_match(response, matches, insensitive, fuzzy)
+            # Multiple matches left
+            if selection is None:
+                stream.write("[!] \"{response}\" matches multiple choices:\n".format(
+                    response=response
+                ))
+                for match in matches:
+                    stream.write("[!]   {}\n".format(match))
+                stream.write("[!] Please specify your choice further.\n")
     return selection
 
 
