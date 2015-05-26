@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pimento',
-    version='0.6.1',
+    version='0.7.0',
     description='Simple CLI Menus',
     long_description=open('README.rst').read(),
     url='https://github.com/toejough/pimento',
