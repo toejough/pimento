@@ -651,6 +651,35 @@ def test_ctrl_c():
     p.expect_exact('CTRL-C detected. Exiting.')
 
 
+def test_partial_option():
+    p = pexpect.spawn('pimento foo "foo bar"', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  foo')
+    p.expect_exact('  foo bar')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline('foo')
+    p.expect_exact('foo')
+    index = p.expect_exact(['[!]', 'foo'])
+    assert index != 0, "Got unexpected warning"
+
+
+def test_partial_fuzzy_option():
+    p = pexpect.spawn('pimento foo "foo bar" "foo bar baz" -f', timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  foo')
+    p.expect_exact('  foo bar')
+    p.expect_exact('  foo bar baz')
+    p.expect_exact('Enter an option to continue: ')
+    p.sendline('oo')
+    p.expect_exact('[!] "oo" matches multiple choices:')
+    p.expect_exact('[!]   foo')
+    p.expect_exact('[!]   foo bar')
+    p.expect_exact('[!]   foo bar baz')
+    p.expect_exact('[!] Please specify your choice further.')
+    p.sendline('bar foo')
+    p.expect_exact('foo bar baz')
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
