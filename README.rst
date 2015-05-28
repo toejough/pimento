@@ -61,7 +61,7 @@ cli menu with all the features
     ['', 'RED', 'Red', 'blue', 'green', 'grey', 'green', 'light URPLE'],
     pre_prompt='Available colors:',
     post_prompt='Please select a color [{}]',
-    default_index=1,
+    default_index=3,
     indexed=True,
     insensitive=True,
     fuzzy=True
