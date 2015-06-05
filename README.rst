@@ -475,10 +475,10 @@ On \*nix, the CLI tool is capable of taking options from a pipe, like so:
 installation
 ============
 
-Latest pushed to Pypi_ (v0.7.0_)
+Latest pushed to Pypi_ (v0.7.1_)
 
 .. _Pypi: https://pypi.python.org/pypi/pimento
-.. _v0.7.0: https://github.com/toejough/pimento/releases/tag/v0.7.0
+.. _v0.7.1: https://github.com/toejough/pimento/releases/tag/v0.7.1
 
 ::
 
