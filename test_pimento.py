@@ -470,6 +470,19 @@ def test_tab():
     p.expect_exact('Enter an option to continue: hello')
 
 
+def test_tab_with_middle():
+    p = pexpect.spawnu('pimento "foo bar" "baz bar" "quux.bar" "barbell" "barstool"', timeout=1)
+    p.expect_exact(u'Enter an option to continue: ')
+    p.send('bar')
+    p.sendcontrol('i')
+    p.sendcontrol('i')
+    p.expect_exact(u'[!] "bar" matches multiple options:')
+    p.expect_exact(u'[!]   barbell')
+    assert 'foo' not in p.before
+    p.expect_exact(u'[!]   barstool')
+    assert 'foo' not in p.before
+
+
 def test_tab_ci():
     p = pexpect.spawn('pimento "HELLO you" "hello joe" "hey you" "goodbye hector" -I', timeout=1)
     p.expect_exact('Enter an option to continue: ')

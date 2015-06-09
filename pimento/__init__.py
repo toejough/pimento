@@ -140,10 +140,16 @@ def _tab_complete_init(items, post_prompt, insensitive, fuzzy, stream):
             stream.write("\n[!] \"{response}\" matches multiple options:\n".format(
                 response=response
             ))
-            if insensitive:
-                ordered_matches = [o for o in items if substitution in o.lower()]
+            if fuzzy:
+                if insensitive:
+                    ordered_matches = [o for o in items if substitution in o.lower()]
+                else:
+                    ordered_matches = [o for o in items if substitution in o]
             else:
-                ordered_matches = [o for o in items if substitution in o]
+                if insensitive:
+                    ordered_matches = [o for o in items if o.lower().startswith(substitution)]
+                else:
+                    ordered_matches = [o for o in items if o.startswith(substitution)]
             for match in ordered_matches:
                 stream.write("[!]   {}\n".format(match))
             stream.write("[!] Please specify your choice further.\n")
