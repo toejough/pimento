@@ -212,7 +212,7 @@ def _prompt(pre_prompt, items, post_prompt, default, indexed, stream):
         item_text_list.append(item_text)
     # build full menu
     menu_parts = [pre_prompt] + item_text_list
-    full_menu = '\n'.join(menu_parts) + '\n'
+    full_menu = '\n'.join(menu_parts) + '\n' + post_prompt
     stream.write(full_menu)
     stream.flush()
     # Get user response
@@ -223,7 +223,7 @@ def _prompt(pre_prompt, items, post_prompt, default, indexed, stream):
     except NameError:
         pass
     # - actuall get input
-    response = get_input(post_prompt)
+    response = get_input()
     return response
 
 

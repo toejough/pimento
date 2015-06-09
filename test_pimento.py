@@ -693,6 +693,14 @@ def test_piping_to_cli():
     p.expect_exact('Enter an option to continue: ')
 
 
+def test_piping_from_cli():
+    p = pexpect.spawn('bash', args = ['-c', 'echo -e "hello\ngoodbye" | pimento | cat'], timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  hello')
+    p.expect_exact('  goodbye')
+    p.expect_exact('Enter an option to continue: ')
+
+
 # [ Manual Interaction ]
 if __name__ == '__main__':
     import argparse
