@@ -17,7 +17,7 @@ except ImportError:
     # No readline.
     # Arrow support will be disabled
     # Tab-completion will be disabled
-    pass
+    _readline = None
 
 
 # [ GLOBALS ]
@@ -212,7 +212,7 @@ def _prompt(pre_prompt, items, post_prompt, default, indexed, stream):
         item_text_list.append(item_text)
     # build full menu
     menu_parts = [pre_prompt] + item_text_list
-    full_menu = '\n'.join(menu_parts) + '\n' + post_prompt
+    full_menu = '\n'.join(menu_parts) + '\n'
     stream.write(full_menu)
     stream.flush()
     # Get user response
@@ -223,7 +223,7 @@ def _prompt(pre_prompt, items, post_prompt, default, indexed, stream):
     except NameError:
         pass
     # - actuall get input
-    response = get_input()
+    response = get_input(post_prompt)
     return response
 
 
@@ -450,16 +450,27 @@ def _cli():
         help='search for the individual words in the user input anywhere in the item strings.',
         action='store_true'
     )
+    parser.add_argument(
+        '--stdout',
+        help='Use stdout for interactive output (instead of the default: stderr).',
+        action='store_true'
+    )
     # parse options
     args, unknown = parser.parse_known_args()
     # set deprecated search option
     args.search = '--search' in unknown or '-s' in unknown
     # argparse nargs is awkward.  Translate to be a proper plural.
     options = args.option
+    # set the stream
+    stream = _sys.stdout if args.stdout else _sys.stderr
     # read more options from stdin if there are are any
     # but only if we're on a 'nix system with tty's
     tty = '/dev/tty'
     if not _sys.stdin.isatty() and _path.exists(tty):
+        if _sys.version_info.major == 3:
+            stream.write('[!] python3 input bug - tab completion not available\n')
+            stream.write('[!] python3 input bug - arrow support not available\n')
+            stream.write('[!] only known workaround is to not pipe in.\n')
         options += [l.rstrip() for l in _sys.stdin]
         # switch to the main tty
         # this solution (to being interactive after reading from pipe)
@@ -475,7 +486,8 @@ def _cli():
             indexed=args.indexed,
             insensitive=args.insensitive,
             search=args.search,
-            fuzzy=args.fuzzy
+            fuzzy=args.fuzzy,
+            stream=stream
         )
         # print the result (to stdout)
         _sys.stdout.write(result + '\n')
@@ -511,8 +523,7 @@ def _dedup(items, insensitive):
 
 # [ Public API ]
 def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, indexed=False,
-         stream=_sys.stderr, insensitive=False, search=False,
-         fuzzy=False):
+         stream=_sys.stderr, insensitive=False, search=False, fuzzy=False, quiet=False):
     '''
     Prompt with a menu.
 
@@ -576,16 +587,48 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
     _check_items(items)
     # other state init
     acceptable_response_given = False
-    _tab_complete_init(items, actual_post_prompt, insensitive, fuzzy, stream)
-    # Prompt Loop
-    # - wait until an acceptable response has been given
-    while not acceptable_response_given:
-        selection = None
-        # Prompt and get response
-        response = _prompt(pre_prompt, items, actual_post_prompt, default, indexed, stream)
-        # validate response
-        selection = _check_response(response, items, default, indexed, stream, insensitive, search, fuzzy)
-        # NOTE: acceptable response logic is purposely verbose to be clear about the semantics.
-        if selection is not None:
-            acceptable_response_given = True
+    if _readline is None:
+        stream.write('[!] readline library not present - tab completion not available\n')
+        stream.write('[!] readline library not present - arrow support not available\n')
+    elif not stream.isatty():
+        stream.write('[!] output stream is not interactive - tab completion not available\n')
+        stream.write('[!] output stream is not interactive - arrow support not available\n')
+    elif _sys.version_info.major == 3 and stream is not _sys.stdout:
+        stream.write('[!] python3 input bug (issue24402) - tab completion not available\n')
+        stream.write('[!] python3 input bug (issue24402) - arrow support not available\n')
+        stream.write('[!] set sys.stdout as the stream to work around\n')
+    else:
+        _tab_complete_init(items, actual_post_prompt, insensitive, fuzzy, stream)
+    # Set both stdout and stderr to the stream selected.
+    # - in py2, raw_input uses sys.stdout
+    # - in py3, input uses a lower-level stdout stream which is not redirectable.
+    #   - there is an open bug for this, scheduled to be resolved in py3.6 (https://bugs.python.org/issue24402)
+    # [raw_]input uses readline to do fancy things like tab completion, and also like reprinting the user
+    # text on the cli when you type.  If we don't redirect the output streams, [raw_]input will always use
+    # the default (stdout) even though most of the time we want stderr for interactive prompts.  we could just
+    # print the prompt ourselves (and not let [raw_]input do so), but only when we control reprinting (which
+    # we don't always for tab completion), and even then, if the user backspaces into the prompt, [raw_]input
+    # would reprint the line itself, erasing the prompt it doesn't know about.  (see issue #70)
+    try:
+        _old_stdout = _sys.stdout
+        _old_stderr = _sys.stderr
+        # only overwrite the stream if we need to, due to the python3 issue
+        if stream is _sys.stdout:
+            pass
+        else:
+            _sys.stdout = stream
+        # Prompt Loop
+        # - wait until an acceptable response has been given
+        while not acceptable_response_given:
+            selection = None
+            # Prompt and get response
+            response = _prompt(pre_prompt, items, actual_post_prompt, default, indexed, stream)
+            # validate response
+            selection = _check_response(response, items, default, indexed, stream, insensitive, search, fuzzy)
+            # NOTE: acceptable response logic is purposely verbose to be clear about the semantics.
+            if selection is not None:
+                acceptable_response_given = True
+    finally:
+        _sys.stdout = _old_stdout
+        _sys.stderr = _old_stderr
     return selection
