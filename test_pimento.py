@@ -16,6 +16,7 @@ import pimento
 
 # [ Helpers ]
 def expect_color_menu_prompt(process):
+    # expect the following lines to be in the prompt, in this order.
     process.expect_exact('which color?')
     process.expect_exact('  red')
     process.expect_exact('  blue')
@@ -27,12 +28,14 @@ def expect_color_menu_prompt(process):
 
 
 def get_color_menu_process():
+    # create a process which prompts for a color selection
     p = pexpect.spawn('pimento red blue green black grey white -p "which color?" -P "Please select one: "', timeout=1)
     expect_color_menu_prompt(p)
     return p
 
 
 def expect_menu_prompt(process):
+    # expect the following lines to be in the prompt, in this order.
     process.expect_exact('yes or no?')
     process.expect_exact('  yes')
     process.expect_exact('  no')
@@ -40,6 +43,7 @@ def expect_menu_prompt(process):
 
 
 def get_menu_process():
+    # create a process which prompts for a yes/no selection
     p = pexpect.spawn('pimento yes no -p "yes or no?" -P "Please choose: "', timeout=1)
     expect_menu_prompt(p)
     return p
@@ -58,14 +62,14 @@ def test_menu_accepts_full_response():
 
 
 def test_menu_rejects_unmatching_response():
-    # yes
+    # maybe, then yes
     p = get_menu_process()
     p.sendline('maybe')
     p.expect_exact('[!] "maybe" does not match any of the valid choices.')
     expect_menu_prompt(p)
     p.sendline('yes')
     p.expect('yes')
-    # no
+    # maybe, then no
     p = get_menu_process()
     p.sendline('maybe')
     p.expect_exact('[!] "maybe" does not match any of the valid choices.')
@@ -75,14 +79,14 @@ def test_menu_rejects_unmatching_response():
 
 
 def test_menu_rejects_no_response():
-    # yes
+    # empty, then yes
     p = get_menu_process()
     p.sendline('')
     p.expect_exact('[!] an empty response is not valid.')
     expect_menu_prompt(p)
     p.sendline('yes')
     p.expect('yes')
-    # no
+    # empty, then no
     p = get_menu_process()
     p.sendline('')
     p.expect_exact('[!] an empty response is not valid.')
@@ -92,21 +96,21 @@ def test_menu_rejects_no_response():
 
 
 def test_menu_accepts_partial_response():
-    # yes
+    # just y for yes
     p = get_menu_process()
     p.sendline('y')
     p.expect('yes')
     p = get_menu_process()
     p.sendline('ye')
     p.expect('yes')
-    # no
+    # just n for no
     p = get_menu_process()
     p.sendline('n')
     p.expect('no')
 
 
 def test_menu_rejects_multiple_matches():
-    # blue
+    # blue, partial then full
     p = get_color_menu_process()
     p.sendline('b')
     p.expect_exact('[!] "b" matches multiple choices:')
@@ -121,13 +125,14 @@ def test_menu_rejects_multiple_matches():
     p.expect_exact('[!] Please specify your choice further.')
     p.sendline('blu')
     p.expect('blue')
-    # black
+    # black, partial then full
     p = get_color_menu_process()
     p.sendline('bla')
     p.expect('black')
 
 
 def test_menu_default():
+    # select the default
     p = pexpect.spawn('pimento yes no -p "Yes/No?" -P "Please select one [{}]: " --default-index=1', timeout=1)
     p.expect_exact('Yes/No?')
     p.expect_exact('  yes')
@@ -138,6 +143,7 @@ def test_menu_default():
 
 
 def test_menu_numbered():
+    # select by number
     p = pexpect.spawn('pimento yes no maybe -i --pre "Select one of the following:" --post "Please select by index or value [{}]: " -d 0', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  [0] yes')
@@ -149,12 +155,14 @@ def test_menu_numbered():
 
 
 def test_indexed_numbers():
+    # select by either index number or number value
     p = pexpect.spawn('python test_pimento.py --indexed-numbers', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  [0] 100')
     p.expect_exact('  [1] 200')
     p.expect_exact('  [2] 300')
     p.expect_exact('Please select by index or value: ')
+    # index
     p.sendline('1')
     p.expect('Result is 200')
     p = pexpect.spawn('python test_pimento.py --indexed-numbers', timeout=1)
@@ -163,30 +171,38 @@ def test_indexed_numbers():
     p.expect_exact('  [1] 200')
     p.expect_exact('  [2] 300')
     p.expect_exact('Please select by index or value: ')
+    # value
     p.sendline('3')
     p.expect('Result is 300')
 
 
 def test_default_not_in_range():
+    # negative
     with pytest.raises(ValueError):
         pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=-1)
+    # past range
     with pytest.raises(ValueError):
         pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=2)
 
 
 def test_default_incorrect_type():
+    # float
     with pytest.raises(TypeError):
         pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=1.5)
 
 
 def test_no_items():
+    # try to create a menu with no items
     with pytest.raises(ValueError):
         pimento.menu("Yes/No?", [], "Please select one: ")
 
 
 def test_bad_items_type():
+    # try to create a menu with bad items
+    # with a non-iterable
     with pytest.raises(TypeError):
         pimento.menu("Yes/No?", 6, "Please select one: ")
+    # with an unbounded iterable
     def generator():
         x = 0
         while True:
@@ -197,18 +213,21 @@ def test_bad_items_type():
 
 
 def test_iterable_items():
+    # with a tuple
     p = pexpect.spawn('python test_pimento.py --tuple', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  100')
     p.expect_exact('  200')
     p.expect_exact('  300')
     p.expect_exact('Please select: ')
+    # a string
     p = pexpect.spawn('python test_pimento.py --string', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  a')
     p.expect_exact('  b')
     p.expect_exact('  c')
     p.expect_exact('Please select: ')
+    # a dict
     p = pexpect.spawn('python test_pimento.py --dictionary', timeout=1)
     p.expect_exact('Select one of the following:')
     i = p.expect_exact(['  key1', '  key2'])
@@ -217,6 +236,7 @@ def test_iterable_items():
     else:
         p.expect_exact('  key1')
     p.expect_exact('Please select: ')
+    # a set
     p = pexpect.spawn('python test_pimento.py --set', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  1')
