@@ -6,6 +6,7 @@ Test suite for pimento
 # [ Imports ]
 # [ - Python ]
 import inspect
+import sys
 # [ - Third Party ]
 import pexpect
 import pytest
@@ -327,6 +328,10 @@ optional arguments:
                         use them to choose.
   --insensitive, -I     Perform insensitive matching. Also drops any items
                         that case-insensitively match prior items.
+  --fuzzy, -f           search for the individual words in the user input
+                        anywhere in the item strings.
+  --stdout              Use stdout for interactive output (instead of the
+                        default: stderr).
 
 The default for the post prompt is "Enter an option to continue: ". If
 --default-index is specified, the default option value will be printed in the
@@ -430,6 +435,9 @@ def test_search():
 
 def test_arrows():
     p = pexpect.spawn('pimento foo bar', timeout=1)
+    # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
+    if sys.version_info.major == 3:
+        p.expect_exact('python3 input bug (issue24402)')
     p.expect_exact('Enter an option to continue: ')
     p.send('oo')
     p.sendline()
@@ -440,7 +448,13 @@ def test_arrows():
     #KEY_RIGHT = '\x1b[C'
     KEY_LEFT = '\x1b[D'
     p.send(KEY_UP)
-    p.expect_exact('oo')
+    # until the python3 input bug is fixed, expect an actual tab in python3
+    i = p.expect_exact(['oo', pexpect.TIMEOUT])
+    if sys.version_info.major == 2:
+        assert i == 0
+    else:
+        assert i == 1
+        return
     p.send(KEY_LEFT*2)
     p.sendline('f')
     p.expect('\r\nfoo')
@@ -448,10 +462,19 @@ def test_arrows():
 
 def test_tab():
     p = pexpect.spawn('pimento "hello there" "hello joe" "hey you" "goodbye hector"', timeout=1)
+    # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
+    if sys.version_info.major == 3:
+        p.expect_exact('python3 input bug (issue24402)')
     p.expect_exact('Enter an option to continue: ')
     p.send('h')
     p.sendcontrol('i')
-    p.expect_exact('e')
+    # until the python3 input bug is fixed, expect an actual tab in python3
+    i = p.expect_exact(['e', pexpect.TIMEOUT])
+    if sys.version_info.major == 2:
+        assert i == 0
+    else:
+        assert i == 1
+        return
     p.sendcontrol('i')
     p.sendcontrol('i')
     p.expect_exact('[!] "he" matches multiple options:')
@@ -472,11 +495,20 @@ def test_tab():
 
 def test_tab_with_middle():
     p = pexpect.spawnu('pimento "foo bar" "baz bar" "quux.bar" "barbell" "barstool"', timeout=1)
+    # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
+    if sys.version_info.major == 3:
+        p.expect_exact('python3 input bug (issue24402)')
     p.expect_exact(u'Enter an option to continue: ')
     p.send('bar')
     p.sendcontrol('i')
     p.sendcontrol('i')
-    p.expect_exact(u'[!] "bar" matches multiple options:')
+    # until the python3 input bug is fixed, expect an actual tab in python3
+    i = p.expect_exact([u'[!] "bar" matches multiple options:', pexpect.TIMEOUT])
+    if sys.version_info.major == 2:
+        assert i == 0
+    else:
+        assert i == 1
+        return
     p.expect_exact(u'[!]   barbell')
     assert 'foo' not in p.before
     p.expect_exact(u'[!]   barstool')
@@ -485,10 +517,19 @@ def test_tab_with_middle():
 
 def test_tab_ci():
     p = pexpect.spawn('pimento "HELLO you" "hello joe" "hey you" "goodbye hector" -I', timeout=1)
+    # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
+    if sys.version_info.major == 3:
+        p.expect_exact('python3 input bug (issue24402)')
     p.expect_exact('Enter an option to continue: ')
     p.send('h')
     p.sendcontrol('i')
-    p.expect_exact('e')
+    # until the python3 input bug is fixed, expect an actual tab in python3
+    i = p.expect_exact(['e', pexpect.TIMEOUT])
+    if sys.version_info.major == 2:
+        assert i == 0
+    else:
+        assert i == 1
+        return
     p.sendcontrol('i')
     p.sendcontrol('i')
     p.expect_exact('[!] "he" matches multiple options:')
@@ -509,10 +550,19 @@ def test_tab_ci():
 
 def test_tab_fuzzy():
     p = pexpect.spawn('pimento "HELLO you" "hello joe" "hey you" "goodbye hector" -f', timeout=1)
+    # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
+    if sys.version_info.major == 3:
+        p.expect_exact('python3 input bug (issue24402)')
     p.expect_exact('Enter an option to continue: ')
     p.send('h')
     p.sendcontrol('i')
-    p.expect_exact('e')
+    # until the python3 input bug is fixed, expect an actual tab in python3
+    i = p.expect_exact(['e', pexpect.TIMEOUT])
+    if sys.version_info.major == 2:
+        assert i == 0
+    else:
+        assert i == 1
+        return
     p.sendcontrol('i')
     p.sendcontrol('i')
     p.expect_exact('[!] "he" matches multiple options:')
@@ -531,10 +581,19 @@ def test_tab_fuzzy():
 
 def test_tab_fuzzy_ci():
     p = pexpect.spawn('pimento "HELLO you" "hello joe" "hey you" "goodbye hector" -fI', timeout=1)
+    # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
+    if sys.version_info.major == 3:
+        p.expect_exact('python3 input bug (issue24402)')
     p.expect_exact('Enter an option to continue: ')
     p.send('h')
     p.sendcontrol('i')
-    p.expect_exact('e')
+    # until the python3 input bug is fixed, expect an actual tab in python3
+    i = p.expect_exact(['e', pexpect.TIMEOUT])
+    if sys.version_info.major == 2:
+        assert i == 0
+    else:
+        assert i == 1
+        return
     p.sendcontrol('i')
     p.sendcontrol('i')
     p.expect_exact('[!] "he" matches multiple options:')
@@ -699,6 +758,65 @@ def test_piping_from_cli():
     p.expect_exact('  hello')
     p.expect_exact('  goodbye')
     p.expect_exact('Enter an option to continue: ')
+
+
+def test_piping_from_cli_and_tab():
+    p = pexpect.spawn('bash', args = ['-c', 'echo -e "hello\ngoodbye" | pimento | cat'], timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  hello')
+    p.expect_exact('  goodbye')
+    p.expect_exact('Enter an option to continue: ')
+    p.send('he')
+    p.sendcontrol('i')
+    index = p.expect_exact(['hello', pexpect.TIMEOUT])
+    if sys.version_info.major == 2:
+        assert index == 0
+    else:
+        assert index == 1
+
+def test_piping_from_cli_and_tab_with_stdout_stream():
+    p = pexpect.spawn('bash', args = ['-c', 'pimento "hello" "goodbye" --stdout 3>&1 1>&2 2>&3 | cat'], timeout=1)
+    p.expect_exact('Options:')
+    p.expect_exact('  hello')
+    p.expect_exact('  goodbye')
+    p.expect_exact('Enter an option to continue: ')
+    p.send('he')
+    p.sendcontrol('i')
+    p.expect_exact('hello')
+
+def test_piping_to_cli_and_tab():
+    p = pexpect.spawn('bash', args = ['-c', 'echo -e "hello\ngoodbye" | pimento '], timeout=1)
+    # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
+    if sys.version_info.major == 3:
+        p.expect_exact('python3 input bug')
+    p.expect_exact('Options:')
+    p.expect_exact('  hello')
+    p.expect_exact('  goodbye')
+    p.expect_exact('Enter an option to continue: ')
+    p.send('he')
+    p.sendcontrol('i')
+    # until the python3 input bug is fixed, expect an actual tab in python3
+    i = p.expect_exact(['hello', pexpect.TIMEOUT])
+    if sys.version_info.major == 2:
+        assert i == 0
+    else:
+        assert i == 1
+        return
+
+
+#still need test for piping from and doing tab completion
+
+# meant to make sure that the backspace doesn't clear the prompt line (issue #70),
+# but I'm not sure how to test the erasure of terminal data with pexpect
+#def test_backspace():
+#    p = pexpect.spawn('pimento foo "foo bar" "foo bar baz"', timeout=1)
+#    p.expect_exact('Options:')
+#    p.expect_exact('  foo')
+#    p.expect_exact('  foo bar')
+#    p.expect_exact('  foo bar baz')
+#    p.expect_exact('Enter an option to continue: ')
+#    p.sendcontrol('h')
+#    p.expect_exact('Enter an option to continue: ')
 
 
 # [ Manual Interaction ]

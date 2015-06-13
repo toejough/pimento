@@ -210,6 +210,21 @@ tab-completion
 Tab completion of options is supported!  At the moment, this is supported via ``readline``, so this is a \*nix-only feature.
 Arrow-key navigation of history and current line is also supported via the ``readline`` library.
 
+python 3 gotchas
+~~~~~~~~~~~~~~~~
+
+Tab completion works for python 3 as long as you have not changed the stdin or stdout since the program started.
+
+Practically, what this means is that you cannot have tab completion and:
+
+* do the interactive stuff on stderr (which is the default for the CLI tool)
+* pipe options into the CLI tool (this makes stdin not a tty).  The CLI tool resolves this in python 2 by
+  over-writing sys.stdin with a tty, but python 3 will still not use readline.
+
+A workaround for the CLI tool for the first point is to use ``--stdout`` to make the tool use stdout for its
+interactive output.
+
+There is no workaround for python 3 for the second point.
 
 using a default
 ---------------
@@ -457,6 +472,7 @@ There is a standalone CLI tool of the same name (``pimento``), which is a wrappe
       --insensitive, -I     Perform insensitive matching. Also drops any items
                             that case-insensitively match prior items.
       --fuzzy, -f           search for the individual words in the user input anywhere in the item strings.
+      --stdout              Use stdout for the interactive output (the default is to use stderr)
 
     The default for the post prompt is "Enter an option to continue: ". If
     --default-index is specified, the default option value will be printed in the
