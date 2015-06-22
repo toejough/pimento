@@ -245,13 +245,16 @@ def test_iterable_items():
 
 
 def test_string_prompts():
+    # not a string (int) for pre-prompt
     with pytest.raises(TypeError):
         pimento.menu(123, [1, 2, 3], "Please select one: ")
+    # not a string (list) for post-prompt
     with pytest.raises(TypeError):
         pimento.menu("Yes/No?", ['y', 'n'], ['prompt'])
 
 
 def test_non_string_items():
+    # use a set of ints for items
     p = pexpect.spawn('python test_pimento.py --set', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  1')
@@ -262,11 +265,13 @@ def test_non_string_items():
 
 
 def test_default_post_prompt():
+    # the the post prompt, no default
     p = pexpect.spawn('pimento 1 2 -p "Select one of the following:"', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  1')
     p.expect_exact('  2')
     p.expect_exact('Enter an option to continue: ')
+    # get the post propmt, with default
     p = pexpect.spawn('pimento 1 2 -p "Select one of the following:" -d 0', timeout=1)
     p.expect_exact('Select one of the following:')
     p.expect_exact('  1')
@@ -276,6 +281,7 @@ def test_default_post_prompt():
 
 def test_post_prompt_not_string():
     # test for https://github.com/toejough/pimento/issues/15
+    # test post prompt is int
     try:
         pimento.menu("pre-prompt", [1,2,3], 5)
     except Exception as e:
@@ -283,6 +289,7 @@ def test_post_prompt_not_string():
 
 
 def test_menu_documentation():
+    # check the menu documentation
     assert pimento.menu.__doc__ == '''
     Prompt with a menu.
 
@@ -317,15 +324,18 @@ def test_menu_documentation():
 
 
 def test_package_documentation():
+    # test the package doc string
     assert pimento.__doc__ == '\nMake simple python cli menus!\n'
 
 
 def test_module_contents():
+    # check that only the expected public functions are public in the module
     public_attributes = [a for a in pimento.__dict__ if not a.startswith('_')]
     assert public_attributes == ['menu']
 
 
 def test_cli_script_help():
+    # check the CLI script help message
     expected_help_text = '''usage: pimento [-h] [--pre TEXT] [--post TEXT] [--default-index INT]
                [--indexed]
                [option [option ...]]
@@ -363,6 +373,7 @@ post prompt as well.'''
 
 
 def test_default_pre_prompt():
+    # validate the default pre-prompt
     p = pexpect.spawn('python test_pimento.py --list-only', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  1')
@@ -371,12 +382,15 @@ def test_default_pre_prompt():
 
 
 def test_deduplication():
+    # validate deduplication
+    # repeated elsewehre
     p = pexpect.spawn('pimento foo bar baz bar foo', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  foo')
     p.expect_exact('  bar')
     p.expect_exact('  baz')
     p.expect_exact('Enter an option to continue: ')
+    # repeated immediately
     p = pexpect.spawn('pimento foo foo foo', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  foo')
@@ -384,6 +398,8 @@ def test_deduplication():
 
 
 def test_insensitive_matching():
+    # match caps to non-caps
+    # first letter
     p = pexpect.spawn('pimento FOO BAR BAZ --insensitive', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  FOO')
@@ -392,6 +408,7 @@ def test_insensitive_matching():
     p.expect_exact('Enter an option to continue: ')
     p.sendline('Foo')
     p.expect_exact('FOO')
+    # whole word
     p = pexpect.spawn('pimento FOO BAR BAZ --insensitive', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  FOO')
@@ -400,6 +417,7 @@ def test_insensitive_matching():
     p.expect_exact('Enter an option to continue: ')
     p.sendline('bar')
     p.expect_exact('BAR')
+    # last letter
     p = pexpect.spawn('pimento FOO BAR BAZ --insensitive', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  FOO')
@@ -411,12 +429,14 @@ def test_insensitive_matching():
 
 
 def test_insensitive_deduplication():
+    # deduplicate non-sequential
     p = pexpect.spawn('pimento FOO bar baz bAr foo', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  FOO')
     p.expect_exact('  bar')
     p.expect_exact('  baz')
     p.expect_exact('Enter an option to continue: ')
+    # deduplicate sequential
     p = pexpect.spawn('pimento Foo fOo foO', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  Foo')
@@ -454,6 +474,7 @@ def test_search():
 
 
 def test_arrows():
+    # test arrow support
     p = pexpect.spawn('pimento foo bar', timeout=1)
     # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
     if sys.version_info.major == 3:
@@ -481,6 +502,7 @@ def test_arrows():
 
 
 def test_tab():
+    # test the tab completion functionality
     p = pexpect.spawn('pimento "hello there" "hello joe" "hey you" "goodbye hector"', timeout=1)
     # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
     if sys.version_info.major == 3:
@@ -495,6 +517,7 @@ def test_tab():
     else:
         assert i == 1
         return
+    # double tab to get a list of matches
     p.sendcontrol('i')
     p.sendcontrol('i')
     p.expect_exact('[!] "he" matches multiple options:')
@@ -503,8 +526,10 @@ def test_tab():
     p.expect_exact('[!]   hey you')
     p.expect_exact('Enter an option to continue: he')
     p.send('l')
+    # single tab to complete up to common completion
     p.sendcontrol('i')
     p.expect_exact('lo')
+    # double tab to get a list of matches
     p.sendcontrol('i')
     p.sendcontrol('i')
     p.expect_exact('[!] "hello " matches multiple options:')
@@ -514,12 +539,14 @@ def test_tab():
 
 
 def test_tab_with_middle():
+    # test if the text to complete starts in the middle of some other word, too
     p = pexpect.spawnu('pimento "foo bar" "baz bar" "quux.bar" "barbell" "barstool"', timeout=1)
     # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
     if sys.version_info.major == 3:
         p.expect_exact('python3 input bug (issue24402)')
     p.expect_exact(u'Enter an option to continue: ')
     p.send('bar')
+    # double tab for completion list
     p.sendcontrol('i')
     p.sendcontrol('i')
     # until the python3 input bug is fixed, expect an actual tab in python3
@@ -529,6 +556,7 @@ def test_tab_with_middle():
     else:
         assert i == 1
         return
+    # for python 2, expect just the options that START with the completion text
     p.expect_exact(u'[!]   barbell')
     assert 'foo' not in p.before
     p.expect_exact(u'[!]   barstool')
@@ -536,6 +564,7 @@ def test_tab_with_middle():
 
 
 def test_tab_ci():
+    # test case-insensitive tab completion
     p = pexpect.spawn('pimento "HELLO you" "hello joe" "hey you" "goodbye hector" -I', timeout=1)
     # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
     if sys.version_info.major == 3:
@@ -550,6 +579,7 @@ def test_tab_ci():
     else:
         assert i == 1
         return
+    # double tab to display options
     p.sendcontrol('i')
     p.sendcontrol('i')
     p.expect_exact('[!] "he" matches multiple options:')
@@ -558,8 +588,10 @@ def test_tab_ci():
     p.expect_exact('[!]   hey you')
     p.expect_exact('Enter an option to continue: he')
     p.send('l')
+    # single tab to extend completion
     p.sendcontrol('i')
     p.expect_exact('lo')
+    # double tab to show options
     p.sendcontrol('i')
     p.sendcontrol('i')
     p.expect_exact('[!] "hello " matches multiple options:')
@@ -569,6 +601,7 @@ def test_tab_ci():
 
 
 def test_tab_fuzzy():
+    # test tab completion with fuzzy matching
     p = pexpect.spawn('pimento "HELLO you" "hello joe" "hey you" "goodbye hector" -f', timeout=1)
     # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
     if sys.version_info.major == 3:
@@ -583,6 +616,7 @@ def test_tab_fuzzy():
     else:
         assert i == 1
         return
+    # double tab for options
     p.sendcontrol('i')
     p.sendcontrol('i')
     p.expect_exact('[!] "he" matches multiple options:')
@@ -591,6 +625,7 @@ def test_tab_fuzzy():
     p.expect_exact('[!]   goodbye hector')
     p.expect_exact('Enter an option to continue: he')
     p.send(' g')
+    # single tab to expand
     p.sendcontrol('i')
     p.expect_exact('oodbye')
     p.send(' ')
@@ -600,6 +635,7 @@ def test_tab_fuzzy():
 
 
 def test_tab_fuzzy_ci():
+    # fuzzy completion, case insensitive
     p = pexpect.spawn('pimento "HELLO you" "hello joe" "hey you" "goodbye hector" -fI', timeout=1)
     # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
     if sys.version_info.major == 3:
@@ -614,6 +650,7 @@ def test_tab_fuzzy_ci():
     else:
         assert i == 1
         return
+    # double tab for options
     p.sendcontrol('i')
     p.sendcontrol('i')
     p.expect_exact('[!] "he" matches multiple options:')
@@ -625,23 +662,28 @@ def test_tab_fuzzy_ci():
 
 
 def test_fuzzy_matching():
+    # test fuzzy matching
     p = pexpect.spawn('pimento "a blue thing" "one green thing" --fuzzy', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  a blue thing')
     p.expect_exact('  one green thing')
     p.expect_exact('Enter an option to continue: ')
+    # send a word at the end of multiple options
     p.sendline('thing')
     p.expect_exact('[!] "thing" matches multiple choices:')
     p.expect_exact('[!]   a blue thing')
     p.expect_exact('[!]   one green thing')
     p.expect_exact('[!] Please specify your choice further.')
+    # send a partial word which, with the prior one, still matches multiple options
     p.sendline('thing e')
     p.expect_exact('[!] "thing e" matches multiple choices:')
     p.expect_exact('[!]   a blue thing')
     p.expect_exact('[!]   one green thing')
     p.expect_exact('[!] Please specify your choice further.')
+    # send another partial word, which, with the prior two, limits to one option
     p.sendline('thing e e')
     p.expect_exact('one green thing')
+    # test words out of order
     p = pexpect.spawn('pimento "a blue thing" "one green thing" --fuzzy', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  a blue thing')
@@ -652,23 +694,28 @@ def test_fuzzy_matching():
 
 
 def test_insensitive_fuzzy_matching():
+    # insensitive fuzzy matching
     p = pexpect.spawn('pimento "a BLUE thing" "one GREEN thing" -I --fuzzy', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  a BLUE thing')
     p.expect_exact('  one GREEN thing')
     p.expect_exact('Enter an option to continue: ')
+    # send a word at the end of multiple options, but wrong case
     p.sendline('THING')
     p.expect_exact('[!] "THING" matches multiple choices:')
     p.expect_exact('[!]   a BLUE thing')
     p.expect_exact('[!]   one GREEN thing')
     p.expect_exact('[!] Please specify your choice further.')
+    # send a partial word which, with the prior one, still matches multiple options
     p.sendline('thing e')
     p.expect_exact('[!] "thing e" matches multiple choices:')
     p.expect_exact('[!]   a BLUE thing')
     p.expect_exact('[!]   one GREEN thing')
     p.expect_exact('[!] Please specify your choice further.')
+    # send another partial word with wrong case, which, with the prior two, limits to one option
     p.sendline('thing e e')
     p.expect_exact('one GREEN thing')
+    # thest words out of order
     p = pexpect.spawn('pimento "a BLUE thing" "one GREEN thing" --fuzzy', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  a BLUE thing')
@@ -679,13 +726,17 @@ def test_insensitive_fuzzy_matching():
 
 
 def test_functions_documented():
+    # verify all functions have a docstring
     for name, func in inspect.getmembers(pimento, inspect.isfunction):
         assert func.__doc__, "{} not documented!".format(name)
 
 
 def test_empty_option_cli():
+    # test error response with empty items provided on the CLI
+    # all empty
     p = pexpect.spawn('pimento "" "" ""', timeout=1)
     p.expect_exact('ERROR: The item list is empty.')
+    # some empty
     p = pexpect.spawn('pimento "" "a BLUE thing" "" "one GREEN thing" "" --fuzzy', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  a BLUE thing')
@@ -694,16 +745,19 @@ def test_empty_option_cli():
 
 
 def test_empty_option_menu():
+    # list with only an empty option
     with pytest.raises(ValueError):
         pimento.menu([''])
 
 
 def test_whitespace_option_menu():
+    # list with only whitespace options
     with pytest.raises(ValueError):
         pimento.menu(['', ' ', '\t', '\n', '\r  '])
 
 
 def test_pre_default_selection():
+    # test default selection
     p = pexpect.spawn('pimento "" "RED" " " "red" "\n\t\r" "green" -Id 5', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  RED')
@@ -712,6 +766,7 @@ def test_pre_default_selection():
 
 
 def test_rstrip_items():
+    # test rstripping items
     p = pexpect.spawn('pimento "red " "red  " "red\t"', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  red')
@@ -719,16 +774,19 @@ def test_rstrip_items():
 
 
 def test_empty_default_selection():
+    # test empty default
     with pytest.raises(ValueError):
         pimento.menu(['', 'foo'], default_index=0)
 
 
 def test_empty_default_selection_cli():
+    # empty default
     p = pexpect.spawn('pimento "" "foo" -d 0', timeout=1)
     p.expect_exact('ERROR: The default index (0) points to an empty item.')
 
 
 def test_ctrl_c():
+    # stop with ctrl-c
     p = pexpect.spawn('pimento foo', timeout=1)
     p.expect_exact('Enter an option to continue:')
     p.sendcontrol('c')
@@ -736,6 +794,7 @@ def test_ctrl_c():
 
 
 def test_partial_option():
+    # test an exact match, even if another option exists which starts with what was entered
     p = pexpect.spawn('pimento foo "foo bar"', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  foo')
@@ -748,6 +807,7 @@ def test_partial_option():
 
 
 def test_partial_fuzzy_option():
+    # test an exact match, even if another option exists which also (incompletely) macthes what was entered
     p = pexpect.spawn('pimento foo "foo bar" "foo bar baz" -f', timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  foo')
@@ -765,6 +825,7 @@ def test_partial_fuzzy_option():
 
 
 def test_piping_to_cli():
+    # pipe to the CLI and still allow interaction
     p = pexpect.spawn('bash', args = ['-c', 'echo -e "hello\ngoodbye" | pimento'], timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  hello')
@@ -773,6 +834,7 @@ def test_piping_to_cli():
 
 
 def test_piping_from_cli():
+    # pipe from the CLI to something else
     p = pexpect.spawn('bash', args = ['-c', 'echo -e "hello\ngoodbye" | pimento | cat'], timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  hello')
@@ -781,6 +843,7 @@ def test_piping_from_cli():
 
 
 def test_piping_from_cli_and_tab():
+    # test tab complition whith piping
     p = pexpect.spawn('bash', args = ['-c', 'echo -e "hello\ngoodbye" | pimento | cat'], timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  hello')
@@ -789,12 +852,18 @@ def test_piping_from_cli_and_tab():
     p.send('he')
     p.sendcontrol('i')
     index = p.expect_exact(['hello', pexpect.TIMEOUT])
+    # python 2 should match
     if sys.version_info.major == 2:
         assert index == 0
+    # python 3 fails, because readline is disabled if piped
     else:
         assert index == 1
 
 def test_piping_from_cli_and_tab_with_stdout_stream():
+    # pipe with stdout as the interactive stream
+    # swap stdout and stderr
+    # send stdout to cat
+    # expect to still get interactive
     p = pexpect.spawn('bash', args = ['-c', 'pimento "hello" "goodbye" --stdout 3>&1 1>&2 2>&3 | cat'], timeout=1)
     p.expect_exact('Options:')
     p.expect_exact('  hello')
@@ -805,6 +874,7 @@ def test_piping_from_cli_and_tab_with_stdout_stream():
     p.expect_exact('hello')
 
 def test_piping_to_cli_and_tab():
+    # pipe to the cli and use tab (different than tabbing when cli is piped to something)
     p = pexpect.spawn('bash', args = ['-c', 'echo -e "hello\ngoodbye" | pimento '], timeout=1)
     # until the python3 input bug is fixed, and the warnings are removed, expect a warning message here
     if sys.version_info.major == 3:
@@ -841,6 +911,8 @@ def test_piping_to_cli_and_tab():
 
 # [ Manual Interaction ]
 if __name__ == '__main__':
+    # create a menu with specific args - this is to functionally test specific API inputs which should
+    # respond interactively
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group(required=True)
