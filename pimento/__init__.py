@@ -289,7 +289,7 @@ def _exact_match(response, matches, insensitive, fuzzy):
         return None
 
 
-def _check_response(response, items, default, indexed, stream, insensitive, search, fuzzy):
+def _check_response(response, items, default, indexed, stream, insensitive, fuzzy):
     '''Check the response against the items'''
     # Set selection
     selection = None
@@ -311,8 +311,6 @@ def _check_response(response, items, default, indexed, stream, insensitive, sear
         if fuzzy:
             matches = _get_fuzzy_matches(response, items)
         # if insensitive, lowercase the comparison
-        elif search:
-            matches = [i for i in items if response in i]
         else:
             matches = [i for i in items if i.startswith(response)]
         # re-sensivitize if necessary
@@ -456,9 +454,7 @@ def _cli():
         action='store_true'
     )
     # parse options
-    args, unknown = parser.parse_known_args()
-    # set deprecated search option
-    args.search = '--search' in unknown or '-s' in unknown
+    args = parser.parse_args()
     # argparse nargs is awkward.  Translate to be a proper plural.
     options = args.option
     # set the stream
@@ -485,7 +481,6 @@ def _cli():
             default_index=args.default_index,
             indexed=args.indexed,
             insensitive=args.insensitive,
-            search=args.search,
             fuzzy=args.fuzzy,
             stream=stream
         )
@@ -523,7 +518,7 @@ def _dedup(items, insensitive):
 
 # [ Public API ]
 def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, indexed=False,
-         stream=_sys.stderr, insensitive=False, search=False, fuzzy=False, quiet=False):
+         stream=_sys.stderr, insensitive=False, fuzzy=False, quiet=False):
     '''
     Prompt with a menu.
 
@@ -537,7 +532,6 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
             can be reserved for program output rather than interactive menu output.
         insensitive -  allow insensitive matching.  Also drops items which case-insensitively match
           prior items.
-        search -  [deprecated] search for the user input anwhere in the item strings, not just at the beginning.
         fuzzy -  search for the individual words in the user input anywhere in the item strings.
 
     Specifying a default index:
@@ -555,11 +549,6 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
     Return:
         result -  The full text of the unambiguously selected item.
     '''
-    # deprecated use: pre_promt first, items second
-    if isinstance(items, str) and not isinstance(pre_prompt, str):
-        swap = items
-        items = pre_prompt
-        pre_prompt = swap
     # arg checking
     _check_prompts(pre_prompt, post_prompt)
     _check_items(items)
@@ -624,7 +613,7 @@ def menu(items, pre_prompt="Options:", post_prompt=_NO_ARG, default_index=None, 
             # Prompt and get response
             response = _prompt(pre_prompt, items, actual_post_prompt, default, indexed, stream)
             # validate response
-            selection = _check_response(response, items, default, indexed, stream, insensitive, search, fuzzy)
+            selection = _check_response(response, items, default, indexed, stream, insensitive, fuzzy)
             # NOTE: acceptable response logic is purposely verbose to be clear about the semantics.
             if selection is not None:
                 acceptable_response_given = True

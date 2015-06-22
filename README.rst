@@ -11,7 +11,6 @@ Use python? Use the CLI? Ever prompt a user to select an option? I have just the
 * `cli`_
 * `installation`_
 * `testing`_
-* `API deprecation notices`_
 
 examples
 ========
@@ -516,31 +515,3 @@ pimento has been tested on python 2.7.9 and 3.4.3 on OSX.  To test yourself:
     pip install tox
     tox
 
-API deprecation notices
-=======================
-
-Prompt ordering
----------------
-
-Prior to version 0.4.0, the signature for ``menu`` was:
-
-.. code:: python
-
-    def menu(pre_prompt, items, post_prompt=DEFAULT, default_index=None, indexed=False):
-
-In v0.4.0, the signature changed to:
-
-.. code:: python
-
-    def menu(items, pre_prompt=DEFAULT, post_prompt=DEFAULT, default_index=None, indexed=False):
-
-To ease transition of any users, there is special code in place to determine which order the caller is passing in ``items`` and ``pre_prompt``.  All pre-0.4.0 code should continue to work, but passing ``pre_prompt`` as the first argument is a deprecated use and should be discontinued.  Old code should be updated.  The compatibility mode will be discontinued soon, but definitely by 1.0.0.
-
-The API was changed to allow the simplest possible calling/use of the ``menu`` function.  The original signature was chosen because I thought that there wasn't a sensible default value, but "Options:" seems sensible enough for a generic default.
-
-Search matching
----------------
-
-As of version 0.6.0, the ``search`` method of matching is deprecated.  It will be removed within a few releases, but definitely by v1.0.0.
-
-``fuzzy`` matching matches the same cases, and is more versatile.
