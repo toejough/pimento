@@ -179,29 +179,29 @@ def test_indexed_numbers():
 def test_default_not_in_range():
     # negative
     with pytest.raises(ValueError):
-        pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=-1)
+        pimento.menu(['yes', 'no'], "Yes/No?", "Please select one [{}]: ", default_index=-1)
     # past range
     with pytest.raises(ValueError):
-        pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=2)
+        pimento.menu(['yes', 'no'], "Yes/No?", "Please select one [{}]: ", default_index=2)
 
 
 def test_default_incorrect_type():
     # float
     with pytest.raises(TypeError):
-        pimento.menu("Yes/No?", ['yes', 'no'], "Please select one [{}]: ", default_index=1.5)
+        pimento.menu(['yes', 'no'], "Yes/No?", "Please select one [{}]: ", default_index=1.5)
 
 
 def test_no_items():
     # try to create a menu with no items
     with pytest.raises(ValueError):
-        pimento.menu("Yes/No?", [], "Please select one: ")
+        pimento.menu([], "Yes/No?", "Please select one: ")
 
 
 def test_bad_items_type():
     # try to create a menu with bad items
     # with a non-iterable
     with pytest.raises(TypeError):
-        pimento.menu("Yes/No?", 6, "Please select one: ")
+        pimento.menu(6, "Yes/No?", "Please select one: ")
     # with an unbounded iterable
     def generator():
         x = 0
@@ -209,7 +209,7 @@ def test_bad_items_type():
             yield x
             x += 1
     with pytest.raises(TypeError):
-        pimento.menu("Yes/No?", generator(), "Please select one: ")
+        pimento.menu(generator(), "Yes/No?", "Please select one: ")
 
 
 def test_iterable_items():
@@ -283,7 +283,7 @@ def test_post_prompt_not_string():
     # test for https://github.com/toejough/pimento/issues/15
     # test post prompt is int
     try:
-        pimento.menu("pre-prompt", [1,2,3], 5)
+        pimento.menu([1,2,3], "pre-prompt", 5)
     except Exception as e:
         assert "pre_prompt" not in e.args[0]
 
@@ -303,7 +303,6 @@ def test_menu_documentation():
             can be reserved for program output rather than interactive menu output.
         insensitive -  allow insensitive matching.  Also drops items which case-insensitively match
           prior items.
-        search -  [deprecated] search for the user input anwhere in the item strings, not just at the beginning.
         fuzzy -  search for the individual words in the user input anywhere in the item strings.
 
     Specifying a default index:
@@ -441,36 +440,6 @@ def test_insensitive_deduplication():
     p.expect_exact('Options:')
     p.expect_exact('  Foo')
     p.expect_exact('Enter an option to continue: ')
-
-
-def test_search():
-    p = pexpect.spawn('pimento "pizza hut" "taco bell" "dairy queen" --search', timeout=1)
-    p.expect_exact('Options:')
-    p.expect_exact('  pizza hut')
-    p.expect_exact('  taco bell')
-    p.expect_exact('  dairy queen')
-    p.expect_exact('Enter an option to continue: ')
-    p.sendline("queen")
-    p.expect_exact('dairy queen')
-    p = pexpect.spawn('pimento "pizza hut" "taco bell" "dairy queen" --search', timeout=1)
-    p.expect_exact('Options:')
-    p.expect_exact('  pizza hut')
-    p.expect_exact('  taco bell')
-    p.expect_exact('  dairy queen')
-    p.expect_exact('Enter an option to continue: ')
-    p.sendline("e")
-    p.expect_exact('[!] "e" matches multiple choices:')
-    p.expect_exact('[!]   taco bell')
-    p.expect_exact('[!]   dairy queen')
-    p.expect_exact('[!] Please specify your choice further.')
-    p = pexpect.spawn('pimento "pizza hut" "taco bell" "dairy queen" --search', timeout=1)
-    p.expect_exact('Options:')
-    p.expect_exact('  pizza hut')
-    p.expect_exact('  taco bell')
-    p.expect_exact('  dairy queen')
-    p.expect_exact('Enter an option to continue: ')
-    p.sendline("Queen")
-    p.expect_exact('dairy queen')
 
 
 def test_arrows():
@@ -934,19 +903,19 @@ if __name__ == '__main__':
                         action='store_true')
     args = parser.parse_args()
     if args.indexed_numbers:
-        result = pimento.menu("Select one of the following:", ['100', '200', '300'], "Please select by index or value: ", indexed=True)
+        result = pimento.menu(['100', '200', '300'], "Select one of the following:", "Please select by index or value: ", indexed=True)
     elif args.tuple:
-        result = pimento.menu("Select one of the following:", ('100', '200', '300'), "Please select: ")
+        result = pimento.menu(('100', '200', '300'), "Select one of the following:", "Please select: ")
     elif args.string:
         result = pimento.menu('abc', "Select one of the following:", "Please select: ")
     elif args.dictionary:
-        result = pimento.menu("Select one of the following:", {'key1': 'v1', 'key2': 'v2'}, "Please select: ")
+        result = pimento.menu({'key1': 'v1', 'key2': 'v2'}, "Select one of the following:", "Please select: ")
     elif args.set:
-        result = pimento.menu("Select one of the following:", set([1, 2]), "Please select: ")
+        result = pimento.menu(set([1, 2]), "Select one of the following:", "Please select: ")
     elif args.pre_only:
-        result = pimento.menu("Select one of the following:", [1, 2])
+        result = pimento.menu([1, 2], "Select one of the following:", )
     elif args.pre_only_default:
-        result = pimento.menu("Select one of the following:", [1, 2], default_index=0)
+        result = pimento.menu([1, 2], "Select one of the following:", default_index=0)
     elif args.list_only:
         result = pimento.menu([1, 2])
     print('Result is {}'.format(result))
