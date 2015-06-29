@@ -335,8 +335,9 @@ def test_module_contents():
 
 def test_cli_script_help():
     # check the CLI script help message
-    expected_help_text = '''usage: pimento [-h] [--pre TEXT] [--post TEXT] [--default-index INT]
-               [--indexed]
+    expected_help_text = '''usage: pimento [-h] [--version] [--pre TEXT] [--post TEXT]
+               [--default-index INT] [--indexed] [--insensitive] [--fuzzy]
+               [--stdout]
                [option [option ...]]
 
 
@@ -348,6 +349,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  --version, -v         Print the version and then exit
   --pre TEXT, -p TEXT   The pre-prompt/title/introduction to the menu.
                         [Options:]
   --post TEXT, -P TEXT  The prompt presented to the user after the menu items.
@@ -368,7 +370,10 @@ post prompt as well.'''
     expected_lines = expected_help_text.splitlines()
     p = pexpect.spawn('pimento --help', timeout=1)
     for line in expected_lines:
-        p.expect_exact(line)
+        try:
+            p.expect_exact(line)
+        except:
+            assert line in p.before
 
 
 def test_default_pre_prompt():
@@ -841,6 +846,17 @@ def test_piping_from_cli_and_tab_with_stdout_stream():
     p.send('he')
     p.sendcontrol('i')
     p.expect_exact('hello')
+
+def test_version_option():
+    # test the version is printed
+    p = pexpect.spawn('pimento --version', timeout=1)
+    p.expect_exact('Pimento - v0.7.1')
+    p.close()
+    assert p.exitstatus == 0
+    p = pexpect.spawn('pimento -v', timeout=1)
+    p.expect_exact('Pimento - v0.7.1')
+    p.close()
+    assert p.exitstatus == 0
 
 def test_piping_to_cli_and_tab():
     # pipe to the cli and use tab (different than tabbing when cli is piped to something)

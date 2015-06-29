@@ -9,6 +9,7 @@ Make simple python cli menus!
 import sys as _sys
 import argparse as _argparse
 import os.path as _path
+import pkg_resources as _pkg_resources
 try:
     # just importing readline means that 'input' will use it.
     # this is unpythonic, but I did not write the builtins.
@@ -25,6 +26,7 @@ except ImportError:
 # knows the user has not passed anything in, even None.  This allows the
 # default argument to be dynamic, rather than static at parse time.
 _NO_ARG=object()
+_VERSION=_pkg_resources.get_distribution("pimento").version
 
 
 # [ Private API ]
@@ -400,7 +402,7 @@ def _cli():
             Present the user with a simple CLI menu, and return the option chosen.
             The menu is presented via stderr.
             The output is printed to stdout for piping.
-            ''',
+            '''.format(_VERSION),
         epilog='''
             The default for the post prompt is "Enter an option to continue: ".
             If --default-index is specified, the default option value will be printed
@@ -411,6 +413,11 @@ def _cli():
         'option',
         help='The option(s) to present to the user.',
         nargs='*'
+    )
+    parser.add_argument(
+        '--version', '-v',
+        help='Print the version and then exit',
+        action='store_true'
     )
     parser.add_argument(
         '--pre', '-p',
@@ -459,6 +466,10 @@ def _cli():
     options = args.option
     # set the stream
     stream = _sys.stdout if args.stdout else _sys.stderr
+    # if version, print version and exit
+    if args.version:
+        stream.write('Pimento - v{}\n'.format(_VERSION))
+        exit(0)
     # read more options from stdin if there are are any
     # but only if we're on a 'nix system with tty's
     tty = '/dev/tty'

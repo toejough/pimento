@@ -450,9 +450,10 @@ There is a standalone CLI tool of the same name (``pimento``), which is a wrappe
 ::
 
     pimento --help
-    usage: pimento [-h] [--pre TEXT] [--post TEXT] [--default-index INT]
-                   [--indexed]
-                   [option ...]
+    usage: pimento [-h] [--version] [--pre TEXT] [--post TEXT]
+                   [--default-index INT] [--indexed] [--insensitive] [--fuzzy]
+                   [--stdout]
+                   [option [option...]]
 
     Present the user with a simple CLI menu, and return the option chosen. The
     menu is presented via stderr. The output is printed to stdout for piping.
@@ -462,6 +463,7 @@ There is a standalone CLI tool of the same name (``pimento``), which is a wrappe
 
     optional arguments:
       -h, --help            show this help message and exit
+      --version, -v         Print the version and then exit
       --pre TEXT, -p TEXT   The pre-prompt/title/introduction to the menu.
                             [Options:]
       --post TEXT, -P TEXT  The prompt presented to the user after the menu items.
