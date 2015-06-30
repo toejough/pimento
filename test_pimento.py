@@ -893,6 +893,31 @@ def test_piping_to_cli_and_tab():
 #    p.sendcontrol('h')
 #    p.expect_exact('Enter an option to continue: ')
 
+def test_fuzzy_option_tc_matching():
+    '''
+    Ensure that even when the correct matching for all initial arguments can't be determined
+    until the final arg is evaluated, the correct matches come back.
+    '''
+    options = [
+        'abcde bcda cdab dabc',
+        'bcdaf abcdg cdab dabc',
+        'bcda cdabf abcdh dabc',
+        'bcda cdab dabcf abcdi',
+    ]
+    text = 'abcd'
+    correct_matches = ['abcde', 'abcdg', 'abcdh', 'abcdi']
+    matches = pimento._get_fuzzy_tc_matches(text, 'a b c ' + text, options)
+    assert matches == correct_matches
+    matches = pimento._get_fuzzy_tc_matches(text, 'a b d ' + text, options)
+    assert matches == correct_matches
+    matches = pimento._get_fuzzy_tc_matches(text, 'a b ' + text, options)
+    assert matches == correct_matches
+    matches = pimento._get_fuzzy_tc_matches(text, 'a ' + text, options)
+    assert matches == correct_matches
+    matches = pimento._get_fuzzy_tc_matches(text, text, options)
+    assert matches == correct_matches
+    matches = pimento._get_fuzzy_tc_matches(text, 'bc ab cd ' + text, options)
+    assert matches == correct_matches
 
 # [ Manual Interaction ]
 if __name__ == '__main__':

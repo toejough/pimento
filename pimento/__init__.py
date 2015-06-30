@@ -45,42 +45,44 @@ def _get_fuzzy_tc_matches(text, full_text, options):
     return only the individual words which have not yet been matched
     which also match the text being tab-completed.
     '''
+    print("text: {}, full: {}, options: {}".format(text, full_text, options))
     # get the options which match the full text
     matching_options = _get_fuzzy_matches(full_text, options)
-    # only return the unmatched words which match the text
-    # being tab-completed
+    # need to only return the individual words which:
+    # - match the 'text'
+    # - are not exclusively matched by other input in full_text
+    # - when matched, still allows all other input in full_text to be matched
+    # get the input tokens
+    input_tokens = full_text.split()
+    # remove one instance of the text to be matched
+    initial_tokens = input_tokens.remove(text)
+    # track the final matches:
     final_matches = []
-    entered_words = full_text.split(' ')
-    # get the words from each option which have not been
-    # previously matched, and which match the text being
-    # completed.
-    for option in matching_options:
-        already_matched = entered_words[:]
-        already_matched.remove(text)
-        option_words = option.split()
-        # strip out full-word matches
-        for word in already_matched:
-            if word in option_words:
-                option_words.remove(word)
-                already_matched.remove(word)
-            # else it was a partial, too
-        # strip out partial-word matches
-        for partial in sorted(
-            already_matched,
-            key=lambda p: len(p),
-            reverse=True
-        ):
-            for word in option_words:
-                if partial in word:
-                    option_words.remove(word)
-                    already_matched.remove(partial)
-                    assert len(already_matched) == 0, "{} not found in {}: _get_fuzzy_matches made a mistake".format(
-                        already_matched, option
-                    )
-        # get unique words left which match the text
-        for word in option_words:
-            if text in word and word not in final_matches:
-                final_matches.append(word)
+    # find matches per option
+    for option in options:
+        option_tokens = option.split()
+        # get tokens which match the text
+        matches = [t for t in option_tokens if text in t]
+        # get input tokens which match one of the matches
+        input_tokens_which_match = [t for t in input_tokens for m in matches if t in m]
+        # if any input token ONLY matches a match, remove that match
+        for token in input_tokens_which_match:
+            token_matches = [t for t in option_tokens if token in t]
+            if len(token_matches) == 1:
+                match = token_matches[0]
+                if match in matches:
+                    matches.remove(match)
+        # for the remaining matches, if the input tokens can be fuzzily matched without
+        # the match, it's ok to return it.
+        for match in matches:
+            # copy option tokens
+            option_tokens_minus_match = option_tokens[:]
+            # remove the match
+            option_tokens_minus_match.remove(match)
+            option_minus_match = ' '.join(option_tokens_minus_match)
+            if _get_fuzzy_matches(' '.join(input_tokens), [option_minus_match]):
+                if match not in final_matches:
+                    final_matches.append(match)
     return final_matches
 
 
@@ -127,8 +129,8 @@ def _tab_complete_init(items, post_prompt, insensitive, fuzzy, stream):
         except Exception:
             # try/catch is for debugging only.  The readline
             # lib swallows exceptions and just doesn't print anything
-            #import traceback as _traceback
-            #print(_traceback.format_exc())
+            import traceback as _traceback
+            print(_traceback.format_exc())
             raise
         return matches[state]
 
@@ -238,14 +240,32 @@ def _fuzzily_matches(response, candidate):
         if word in c_words:
             r_words.remove(word)
             c_words.remove(word)
-    # match partial words, longest first
+    # match partial words, fewest matches first
+    match_pairs = []
     for partial in sorted(r_words, key=lambda p: len(p), reverse=True):
-        for word in c_words:
-            if partial in word:
-                r_words.remove(partial)
-                c_words.remove(word)
+        matches = [w for w in c_words if partial in w]
+        match_pairs.append((partial, matches))
+    # if all items can be uniquly matched, the match is passed
+    while len(match_pairs):
+        min_pair = min(match_pairs, key=lambda x:len(x[1]))
+        # this is the partial and matches with the shortest match list
+        # if there are ever no matches for something, the match is failed
+        if len(min_pair[1]) == 0:
+            return False
+        # choose the match with the fewest matches to remaining partials.
+        # that way we leave more options for more partials, for the best
+        # chance of a full match
+        partials_left = [p[0] for p in match_pairs]
+        min_option = min(min_pair[1], key=lambda x:len([p for p in partials_left if x in p]))
+        # remove the current pair - we've matched it now
+        match_pairs.remove(min_pair)
+        # remove the matched option from all pairs' options so it won't be matched again
+        for pair in match_pairs:
+            pair_options = pair[1]
+            if min_option in pair_options:
+                pair_options.remove(min_option)
     # if all the items in the response were matched, this is match
-    return len(r_words) == 0
+    return True
 
 
 def _get_fuzzy_matches(response, items):
