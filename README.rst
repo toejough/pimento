@@ -2,9 +2,7 @@
 pimento
 =======
 
-Use python? Use the CLI? Ever prompt a user to select an option? I have just the module for you!
-
-``pimento`` is a simple CLI menu module for python.  It also comes with a standalone command-line executable of the same name.
+``pimento`` is a simple CLI menu module for python.  It also comes with a standalone command-line executable of the same name, which is pipe-friendly.
 
 * `examples`_
 * `features`_
