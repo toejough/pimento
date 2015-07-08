@@ -2,7 +2,7 @@
 pimento
 =======
 
-image:: https://travis-ci.org/toejough/pimento.svg?branch=issue.83.travis-ci
+..image:: https://travis-ci.org/toejough/pimento.svg?branch=issue.83.travis-ci
 
 ``pimento`` is a simple CLI menu module for python.  It also comes with a standalone command-line executable of the same name, which is pipe-friendly.
 
