@@ -149,18 +149,18 @@ if __name__ == "__main__":
         if key is not None:
             if key == 'q':
                 quitting = True
-            #print "sequence: {}".format(raw_bytes)
-            #print "key: {}".format(key)
-            if key == 'BACK':
-                sys.stdout.write(chr(27))
-                sys.stdout.write(chr(91))
-                sys.stdout.write(chr(68))
-                sys.stdout.write(' ')
-                sys.stdout.write(chr(27))
-                sys.stdout.write(chr(91))
-                sys.stdout.write(chr(68))
-            else:
-                sys.stdout.write(key)
+            print "sequence: {}".format(raw_bytes)
+            print "key: {}".format(key)
+            #if key == 'BACK':
+            #    sys.stdout.write(chr(27))
+            #    sys.stdout.write(chr(91))
+            #    sys.stdout.write(chr(68))
+            #    sys.stdout.write(' ')
+            #    sys.stdout.write(chr(27))
+            #    sys.stdout.write(chr(91))
+            #    sys.stdout.write(chr(68))
+            #else:
+            #    sys.stdout.write(key)
         else:
             print "Unknown key: {}".format(raw_bytes)
     print "got q - quitting."
